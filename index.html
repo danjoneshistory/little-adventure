@@ -557,8 +557,6 @@ function renderGrid(app){
     t.append(el("span", {class:"nm"}, p.name));
     if (solved){
       t.append(el("span", {class:"check", "aria-label":"Completed"}, "✓"));
-      const b = art(heart("#FF4F8B", "#fff", 4), "badge");
-      b.append(el("span", {}, p.piece)); t.append(b);
     } else if (arrived){
       t.append(el("span", {class:"tag"}, "Puzzle!"));
     }
