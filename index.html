@@ -15,7 +15,7 @@
                 Delete "soon: true," to reveal a place.
      name     - shown on the tile (keep it short)
      icon     - climb, mountain, art, bag, book, giraffe, trees, coffee,
-                duck, guitar, koi, beach, lighthouse, gift, star
+                duck, guitar, koi, beach, lighthouse, bridge, candy, market, gift, star
      lat/lng  - location; radius = how close (metres) to unlock
      puzzle   - shown once they arrive (line breaks are kept)
      answers  - accepted answers; case, spaces and punctuation are ignored
@@ -24,6 +24,8 @@
      choices  - optional: instead of one lat/lng, a list of spots to pick from.
                 Each spot gets its own screen and its own puzzle / answers / prize.
                 Once they unlock one spot, that becomes their pick for this place.
+                Each spot can have its own icon. choiceLayout: "tiles" shows the
+                spots as picture tiles instead of a list.
    finalPuzzle:
      prompt   - shown once all 12 pieces are collected
      answers  - leave [] to reveal the big thing right away,
@@ -40,7 +42,16 @@ const HUNT = {
   },
   showDistance: true,
   places: [
-    { name: "Cleveland",          icon: "lighthouse", lat: 41.46600, lng: -81.50900, radius: 3500, puzzle: "CLEVELAND PUZZLE", answers: ["clevelandanswer"], prize: "CLEVELAND PRIZE", piece: "1" },
+    { name: "Beachwood",          icon: "lighthouse", choiceLayout: "tiles",
+      choices: [
+        { name: "Pooh Sticks Bridge",      icon: "bridge", lat: 41.46919, lng: -81.46169, radius: 60,
+          puzzle: "POOH STICKS PUZZLE", answers: ["poohanswer"],   prize: "POOH STICKS PRIZE" },
+        { name: "b.a. Sweetie Candy",      icon: "candy",  lat: 41.42015, lng: -81.73167, radius: 120,
+          puzzle: "CANDY PUZZLE",       answers: ["candyanswer"],  prize: "CANDY PRIZE" },
+        { name: "Fall Craft Market",       icon: "market", lat: 41.49852, lng: -81.49424, radius: 250,
+          puzzle: "MARKET PUZZLE",      answers: ["marketanswer"], prize: "MARKET PRIZE" }
+      ],
+      piece: "1" },
     { name: "Belmont",            icon: "koi",      lat: 37.56199, lng: -122.32197, radius: 80,  puzzle: "PUZZLE 11", answers: ["answer11"], prize: "PRIZE 11", piece: "2" },
     { name: "Santa Cruz",         icon: "beach",
       choices: [
@@ -179,6 +190,7 @@ button:focus-visible{outline:3px solid var(--ink); outline-offset:3px}
 .choiceBtn:active{transform:translateY(3px); box-shadow:0 1px 0 var(--line)}
 .choiceBtn::before{content:""; width:14px; height:13px; flex:none; background:var(--heart);
   clip-path:path("M7 13 C2 9.5 0 7 0.6 4.4 C1.2 1.6 4.6 1 7 3.6 C9.4 1 12.8 1.6 13.4 4.4 C14 7 12 9.5 7 13 Z")}
+.choiceGrid{margin-top:1.3rem}
 .where{color:var(--muted); font-weight:700; margin:.15rem 0 0}
 .pieceHeart{position:relative; width:110px; height:100px; margin:.5rem auto 0}
 .pieceHeart svg{width:100%; height:100%}
@@ -273,6 +285,23 @@ const ICONS = {
     <path d="M24 13 L32 6 L40 13 Z" fill="#FF4F8B" ${S}/>
     <path d="M14 15 L22 17 M14 21 L22 19 M50 15 L42 17 M50 21 L42 19" ${S} stroke="#FFB894" stroke-width="2.4"/>
     ${eyes(29,35,51)}<path d="M30 54 q2 1.6 4 0" fill="none" ${S} stroke-width="1.8"/></svg>`,
+  bridge: `<svg viewBox="0 0 64 64"><path d="M2 50 C12 46 20 54 32 50 C44 46 52 54 62 50 V60 H2 Z" fill="#9DD2FF" ${S}/>
+    <path d="M6 44 C18 22 46 22 58 44" fill="none" ${S} stroke-width="5" stroke="#3A2140"/>
+    <path d="M6 44 C18 22 46 22 58 44" fill="none" stroke="#FFB894" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M14 34 V44 M24 28 V42 M32 27 V41 M40 28 V42 M50 34 V44" ${S} stroke-width="2.2"/>
+    <path d="M10 26 C20 14 44 14 54 26" fill="none" ${S}/>
+    <path d="M22 55 l9 -2 M38 56 l8 1" ${S} stroke="#8a5a3c" stroke-width="3"/>
+    ${eyes(28,36,36)}<path d="M30 39.5 q2 1.6 4 0" fill="none" ${S} stroke-width="1.8"/></svg>`,
+  candy: `<svg viewBox="0 0 64 64"><path d="M16 32 L4 22 L8 32 L4 42 Z" fill="#C4B0FF" ${S}/><path d="M48 32 L60 22 L56 32 L60 42 Z" fill="#C4B0FF" ${S}/>
+    <ellipse cx="32" cy="32" rx="17" ry="14" fill="#FF8FB8" ${S}/>
+    <path d="M22 22 C26 30 26 36 22 43 M42 22 C38 30 38 36 42 43" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+    ${eyes(28,36,31)}${smile(32,35,3)}</svg>`,
+  market: `<svg viewBox="0 0 64 64"><rect x="12" y="30" width="40" height="24" rx="3" fill="#FFF5F9" ${S}/>
+    <path d="M8 30 L14 14 H50 L56 30 Z" fill="#fff" ${S}/>
+    <path d="M14 14 L12 30 M23 14 L22 30 M32 14 V30 M41 14 L42 30 M50 14 L52 30" ${S} stroke-width="2"/>
+    <path d="M8 30 C10 36 16 36 18 30 C20 36 26 36 28 30 C30 36 36 36 38 30 C40 36 46 36 48 30 C50 36 56 36 56 30" fill="#FF8FB8" ${S} stroke-width="2.2"/>
+    <circle cx="22" cy="46" r="4" fill="#FFDB75" ${S} stroke-width="2"/><rect x="29" y="42" width="8" height="8" rx="2" fill="#8FDFC5" ${S} stroke-width="2"/>
+    <path d="M44 49 C40 46 40 43.5 41.5 42.5 C43 41.5 44 42.5 44 43.5 C44 42.5 45 41.5 46.5 42.5 C48 43.5 48 46 44 49 Z" fill="#FF4F8B" ${S} stroke-width="1.6"/></svg>`,
   gift: `<svg viewBox="0 0 64 64"><rect x="10" y="26" width="44" height="30" rx="5" fill="#C4B0FF" ${S}/>
     <rect x="7" y="18" width="50" height="10" rx="4" fill="#FF8FB8" ${S}/><path d="M32 18 V56" ${S}/>
     <path d="M32 18 C24 6 14 12 20 18 M32 18 C40 6 50 12 44 18" fill="none" ${S}/></svg>`,
@@ -445,9 +474,9 @@ function backBtn(label, fn){
   b.addEventListener("click", fn);
   return b;
 }
-function placeHead(i, title, subtitle){
+function placeHead(i, title, subtitle, icon){
   const head = el("header", {class:"phead"});
-  const bub = art(ICONS[P[i].icon] || ICONS.star, "bubble");
+  const bub = art(ICONS[icon || P[i].icon] || ICONS.star, "bubble");
   bub.style.setProperty("--c", colorOf(i));
   head.append(bub, el("h1", {}, title));
   if (subtitle) head.append(el("p", {class:"where"}, subtitle));
@@ -466,6 +495,19 @@ function renderPlace(app, i){
     app.append(placeHead(i, p.name));
     const card = el("section", {class:"card"});
     card.append(el("p", {class:"text"}, "Your choice! Which spot are you visiting?"));
+    if (p.choiceLayout === "tiles"){
+      app.append(card);
+      const g = el("div", {class:"grid choiceGrid"});
+      p.choices.forEach((ch, k) => {
+        const t = el("button", {type:"button", class:"tile", "aria-label": ch.name});
+        t.style.setProperty("--c", colorOf(i + k + 1));
+        t.append(art(ICONS[ch.icon] || ICONS.star, "ic"), el("span", {class:"nm"}, ch.name));
+        t.addEventListener("click", () => go(i, k));
+        g.append(t);
+      });
+      app.append(g);
+      return;
+    }
     const ul = el("ul", {class:"choices"});
     p.choices.forEach((ch, k) => {
       const li = el("li");
@@ -483,7 +525,7 @@ function renderPlace(app, i){
   document.title = (spot ? spot.name : p.name) + " · " + HUNT.title;
   if (spot && !arrived) app.append(backBtn("‹ " + p.name, () => go(i, null)));
   else app.append(backBtn("‹ All places", () => go(null)));
-  app.append(placeHead(i, spot ? spot.name : p.name, spot ? p.name : null));
+  app.append(placeHead(i, spot ? spot.name : p.name, spot ? p.name : null, spot ? spot.icon : null));
 
   if (!arrived){
     const card = el("section", {class:"card"});
