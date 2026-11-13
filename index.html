@@ -20,7 +20,7 @@
      lat/lng  - location; radius = how close (metres) to unlock
      puzzle   - shown once they arrive (line breaks are kept)
      answers  - accepted answers; case, spaces and punctuation are ignored
-     prize    - shown when they solve it
+     prize    - shown when they solve it (optional: leave it out and they just get the heart)
      piece    - their piece of the final puzzle
      intro    - optional page shown before the puzzle: { sections: [{heading, text}], button }
      photo    - optional photo step before the puzzle: { heading, text }
@@ -75,8 +75,7 @@ const HUNT = {
               { theme: "Things that float",  words: ["CORK", "RAFT", "BUOY", "LEAF"],          color: "blue" },
               { theme: "Things with a bridge", words: ["NOSE", "TEETH", "VIOLIN", "GLASSES"], color: "purple" }
             ]
-          },
-          prize: "POOH STICKS PRIZE" },
+          } },
         { name: "b.a. Sweetie Candy",      icon: "candy",  lat: 41.42015, lng: -81.73167, radius: 120,
           puzzle: "CANDY PUZZLE",       answers: ["candyanswer"],  prize: "CANDY PRIZE" },
         { name: "Fall Craft Market",       icon: "market", lat: 41.49852, lng: -81.49424, radius: 250,
@@ -738,9 +737,11 @@ function renderPlace(app, i){
     const pr = el("section", {class:"card prizeCard" + (flash === "solve" ? " reveal" : "")});
     const ph0 = getPhoto(stepKey(i, c));
     if (ph0){ pr.append(el("img", {class:"preview keep", src: ph0, alt:"Your photo"})); }
-    pr.append(el("h2", {}, "Your prize"));
-    pr.append(el("p", {class:"text"}, e.prize));
-    pr.append(el("h2", {style:"margin-top:1.3rem"}, "Your piece of the big surprise"));
+    if (e.prize){
+      pr.append(el("h2", {}, "Your prize"));
+      pr.append(el("p", {class:"text"}, e.prize));
+    }
+    pr.append(el("h2", {style: e.prize ? "margin-top:1.3rem" : ""}, "Your piece of the big surprise"));
     const ph = art(heart("#FF4F8B", "#3A2140", 2.6), "pieceHeart");
     ph.append(el("span", {}, p.piece));
     pr.append(ph);
