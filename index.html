@@ -168,6 +168,9 @@ main{max-width:34rem; margin:0 auto; padding:1rem 1.1rem 3rem}
   position:absolute; top:-6px; right:-4px; background:var(--card); color:var(--ink);
   font-size:.68rem; font-weight:800; padding:.1rem .45rem; border-radius:999px; border:2px solid var(--c);
 }
+.tile .check{position:absolute; top:-8px; left:-8px; width:26px; height:26px; border-radius:50%;
+  background:#1F9D6E; color:#fff; border:2px solid #fff; display:flex; align-items:center; justify-content:center;
+  font-weight:800; font-size:.85rem; line-height:1; box-shadow:0 2px 0 rgba(58,33,64,.25)}
 .tile .badge{position:absolute; top:-10px; right:-8px; width:40px; height:40px}
 .tile .badge svg{width:100%; height:100%}
 .tile .badge span{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:3px;
@@ -270,9 +273,20 @@ label.ghost{display:block; text-align:center; color:var(--muted); border:2px das
   100%{transform:translateY(-105vh) rotate(var(--r)) scale(1.1); opacity:0}
 }
 
+/* Confetti */
+.confetti{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:20}
+.confetti i{position:absolute; top:-24px; width:9px; height:15px; border-radius:2px; animation:fall var(--d) cubic-bezier(.3,.6,.6,1) forwards}
+@keyframes fall{
+  0%{transform:translate(0,0) rotate(0); opacity:1}
+  85%{opacity:1}
+  100%{transform:translate(var(--x), 108vh) rotate(var(--r)); opacity:0}
+}
+.congrats{font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; font-size:1.8rem; color:var(--heart); margin:0 0 .2rem}
+.prizeCard .home{margin-top:1.3rem}
+
 .test{margin-top:2rem; padding-top:1rem; border-top:2px dashed var(--warn); text-align:center}
 .test p{color:var(--warn); margin:0; font-size:.9rem; font-weight:700}
-@media (prefers-reduced-motion: reduce){ .reveal, .cxGroup, .shake, .pop{animation:none} .burst{display:none} .tile{transition:none} }
+@media (prefers-reduced-motion: reduce){ .reveal, .cxGroup, .shake, .pop{animation:none} .burst, .confetti{display:none} .tile{transition:none} }
 </style>
 </head>
 <body>
@@ -496,6 +510,25 @@ function burst(n = 26){
   setTimeout(() => b.remove(), 3200);
 }
 
+function confetti(n = 90){
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const colors = [...BURST, "#FF4F8B"];
+  const b = el("div", {class:"confetti"});
+  for (let k = 0; k < n; k++){
+    const i = el("i");
+    i.style.left = (Math.random() * 100) + "vw";
+    i.style.background = colors[k % colors.length];
+    i.style.animationDelay = (Math.random() * 1.2) + "s";
+    i.style.setProperty("--d", (2.4 + Math.random() * 1.6) + "s");
+    i.style.setProperty("--x", (Math.random() * 120 - 60) + "px");
+    i.style.setProperty("--r", (Math.random() * 1080 - 540) + "deg");
+    if (Math.random() < .35){ i.style.width = "10px"; i.style.height = "10px"; i.style.borderRadius = "50%"; }
+    b.append(i);
+  }
+  document.body.append(b);
+  setTimeout(() => b.remove(), 5500);
+}
+
 /* Grid */
 function renderGrid(app){
   document.title = HUNT.title;
@@ -523,6 +556,7 @@ function renderGrid(app){
     t.append(art(ICONS[p.icon] || ICONS.star, "ic"));
     t.append(el("span", {class:"nm"}, p.name));
     if (solved){
+      t.append(el("span", {class:"check", "aria-label":"Completed"}, "✓"));
       const b = art(heart("#FF4F8B", "#fff", 4), "badge");
       b.append(el("span", {}, p.piece)); t.append(b);
     } else if (arrived){
@@ -737,7 +771,9 @@ function renderPlace(app, i){
   app.append(card);
 
   if (solved){
-    const pr = el("section", {class:"card prizeCard" + (flash === "solve" ? " reveal" : "")});
+    const justSolved = flash === "solve";
+    const pr = el("section", {class:"card prizeCard" + (justSolved ? " reveal" : "")});
+    pr.append(el("p", {class:"congrats"}, "Congratulations!"));
     const ph0 = getPhoto(stepKey(i, c));
     if (ph0){ pr.append(el("img", {class:"preview keep", src: ph0, alt:"Your photo"})); }
     if (e.prize){
@@ -748,7 +784,11 @@ function renderPlace(app, i){
     const ph = art(heart("#FF4F8B", "#3A2140", 2.6), "pieceHeart");
     ph.append(el("span", {}, p.piece));
     pr.append(ph);
+    const home = el("button", {type:"button", class:"primary home"}, "Back to all places");
+    home.addEventListener("click", () => go(null));
+    pr.append(home);
     app.append(pr);
+    if (justSolved) requestAnimationFrame(() => pr.scrollIntoView({behavior:"smooth", block:"start"}));
   }
 }
 
@@ -865,7 +905,7 @@ function solve(i, c){
   }
   if (!has(state.arrived, i)) state.arrived.push(i);
   if (!has(state.solved, i)) state.solved.push(i);
-  save(); flash = "solve"; render(); burst();
+  save(); flash = "solve"; render(); confetti();
 }
 
 function check(i, c){
