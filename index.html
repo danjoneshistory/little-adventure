@@ -23,7 +23,7 @@
      piece    - their piece of the final puzzle
      choices  - optional: instead of one lat/lng, a list of spots to pick from.
                 Each spot gets its own screen and its own puzzle / answers / prize.
-                Once they unlock one spot, that becomes their pick for this place.
+                They can switch between spots any time; solving any one earns the piece.
                 Each spot can have its own icon. choiceLayout: "tiles" shows the
                 spots as picture tiles instead of a list.
    finalPuzzle:
@@ -191,6 +191,7 @@ button:focus-visible{outline:3px solid var(--ink); outline-offset:3px}
 .choiceBtn::before{content:""; width:14px; height:13px; flex:none; background:var(--heart);
   clip-path:path("M7 13 C2 9.5 0 7 0.6 4.4 C1.2 1.6 4.6 1 7 3.6 C9.4 1 12.8 1.6 13.4 4.4 C14 7 12 9.5 7 13 Z")}
 .choiceGrid{margin-top:1.3rem}
+.choiceNote{margin-left:.5rem; font-size:.75rem; font-weight:800; color:#fff; background:var(--heart); border-radius:999px; padding:.1rem .5rem}
 .where{color:var(--muted); font-weight:700; margin:.15rem 0 0}
 .pieceHeart{position:relative; width:110px; height:100px; margin:.5rem auto 0}
 .pieceHeart svg{width:100%; height:100%}
@@ -332,8 +333,9 @@ const TEST = new URLSearchParams(location.search).has("test");
 const P = HUNT.places;
 
 function load(){
-  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.arrived) return s; } catch(e){}
-  return { arrived: [], solved: [], finalSolved: false };
+  const blank = { arrived: [], solved: [], finalSolved: false, spotArrived: [], spotSolved: [] };
+  try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.arrived) return Object.assign(blank, s); } catch(e){}
+  return blank;
 }
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
 
@@ -345,8 +347,9 @@ let flash = null;
 const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[^a-z0-9]/g, "");
 const has = (arr, i) => arr.includes(i);
 const colorOf = i => COLORS[i % COLORS.length];
-function chosenIdx(i){ const c = state.chosen ? state.chosen[i] : null; return P[i].choices && c != null ? c : null; }
-function chosen(i){ const c = chosenIdx(i); return c != null ? P[i].choices[c] : null; }
+const spotKey = (i, k) => i + "-" + k;
+const spotOpen = (i, k) => has(state.spotArrived, spotKey(i, k));
+const spotDone = (i, k) => has(state.spotSolved, spotKey(i, k));
 
 
 function metres(lat1, lng1, lat2, lng2){
@@ -462,7 +465,7 @@ function renderGrid(app){
     const t = el("section", {class:"test"});
     t.append(el("p", {}, "Test mode is on (remove ?test from the link before sharing)."));
     const r = el("button", {type:"button", class:"ghost"}, "Reset all progress");
-    r.addEventListener("click", () => { state = {arrived:[], solved:[], finalSolved:false, chosen:{}}; save(); render(); });
+    r.addEventListener("click", () => { state = {arrived:[], solved:[], finalSolved:false, spotArrived:[], spotSolved:[]}; save(); render(); });
     t.append(r);
     app.append(t);
   }
@@ -485,8 +488,7 @@ function placeHead(i, title, subtitle, icon){
 
 function renderPlace(app, i){
   const p = P[i];
-  const solved = has(state.solved, i), arrived = has(state.arrived, i);
-  const c = p.choices ? (chosenIdx(i) != null ? chosenIdx(i) : sub) : null;
+  const c = p.choices ? sub : null;
 
   // Choice menu
   if (p.choices && c == null){
@@ -494,36 +496,44 @@ function renderPlace(app, i){
     app.append(backBtn("‹ All places", () => go(null)));
     app.append(placeHead(i, p.name));
     const card = el("section", {class:"card"});
-    card.append(el("p", {class:"text"}, "Your choice! Which spot are you visiting?"));
+    card.append(el("p", {class:"text"}, has(state.solved, i)
+      ? "You earned this piece! You can still visit the other spots if you like."
+      : "Your choice! Which spot are you visiting? You can switch any time."));
+    app.append(card);
     if (p.choiceLayout === "tiles"){
-      app.append(card);
       const g = el("div", {class:"grid choiceGrid"});
       p.choices.forEach((ch, k) => {
-        const t = el("button", {type:"button", class:"tile", "aria-label": ch.name});
+        const done = spotDone(i, k), open = spotOpen(i, k);
+        const t = el("button", {type:"button", class:"tile" + (done ? " solved" : ""), "aria-label": ch.name + (done ? ", solved" : open ? ", puzzle open" : "")});
         t.style.setProperty("--c", colorOf(i + k + 1));
         t.append(art(ICONS[ch.icon] || ICONS.star, "ic"), el("span", {class:"nm"}, ch.name));
+        if (done){ const bd = art(heart("#FF4F8B", "#fff", 4), "badge"); bd.append(el("span", {}, "✓")); t.append(bd); }
+        else if (open) t.append(el("span", {class:"tag"}, "Puzzle!"));
         t.addEventListener("click", () => go(i, k));
         g.append(t);
       });
       app.append(g);
-      return;
+    } else {
+      const ul = el("ul", {class:"choices"});
+      p.choices.forEach((ch, k) => {
+        const li = el("li");
+        const btn = el("button", {type:"button", class:"choiceBtn"}, ch.name);
+        const note = spotDone(i, k) ? "Solved" : spotOpen(i, k) ? "Puzzle!" : null;
+        if (note) btn.append(el("span", {class:"choiceNote"}, note));
+        btn.addEventListener("click", () => go(i, k));
+        li.append(btn); ul.append(li);
+      });
+      card.append(ul);
     }
-    const ul = el("ul", {class:"choices"});
-    p.choices.forEach((ch, k) => {
-      const li = el("li");
-      const btn = el("button", {type:"button", class:"choiceBtn"}, ch.name);
-      btn.addEventListener("click", () => go(i, k));
-      li.append(btn); ul.append(li);
-    });
-    card.append(ul);
-    app.append(card);
     return;
   }
 
   const spot = c != null ? p.choices[c] : null;
   const e = spot ? Object.assign({}, p, spot, {name: p.name}) : p;
+  const arrived = spot ? spotOpen(i, c) : has(state.arrived, i);
+  const solved = spot ? spotDone(i, c) : has(state.solved, i);
   document.title = (spot ? spot.name : p.name) + " · " + HUNT.title;
-  if (spot && !arrived) app.append(backBtn("‹ " + p.name, () => go(i, null)));
+  if (spot) app.append(backBtn("‹ " + p.name, () => go(i, null)));
   else app.append(backBtn("‹ All places", () => go(null)));
   app.append(placeHead(i, spot ? spot.name : p.name, spot ? p.name : null, spot ? spot.icon : null));
 
@@ -550,7 +560,7 @@ function renderPlace(app, i){
     const b = el("button", {type:"button", class:"primary"}, "Check answer");
     const submit = () => {
       if (!inp.value.trim()) return;
-      if ((e.answers || []).some(a => norm(a) === norm(inp.value))) solve(i);
+      if ((e.answers || []).some(a => norm(a) === norm(inp.value))) solve(i, c);
       else setStatus("So close! Try again.", "warn");
     };
     b.addEventListener("click", submit);
@@ -558,7 +568,7 @@ function renderPlace(app, i){
     card.append(inp, b, el("p", {class:"status", id:"status"}));
     if (TEST){
       const u = el("button", {type:"button", class:"ghost"}, "Test: mark solved");
-      u.addEventListener("click", () => solve(i));
+      u.addEventListener("click", () => solve(i, c));
       card.append(u);
     }
   }
@@ -584,11 +594,15 @@ function render(){
 }
 
 function arrive(i, c){
-  if (c != null){ state.chosen = state.chosen || {}; state.chosen[i] = c; }
+  if (c != null && !spotOpen(i, c)) state.spotArrived.push(spotKey(i, c));
   if (!has(state.arrived, i)) state.arrived.push(i);
   save(); flash = "arrive"; render();
 }
-function solve(i){
+function solve(i, c){
+  if (c != null){
+    if (!spotOpen(i, c)) state.spotArrived.push(spotKey(i, c));
+    if (!spotDone(i, c)) state.spotSolved.push(spotKey(i, c));
+  }
   if (!has(state.arrived, i)) state.arrived.push(i);
   if (!has(state.solved, i)) state.solved.push(i);
   save(); flash = "solve"; render(); burst();
