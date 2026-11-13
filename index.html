@@ -21,7 +21,8 @@
      puzzle   - shown once they arrive (line breaks are kept)
      answers  - accepted answers; case, spaces and punctuation are ignored
      prize    - shown when they solve it (optional: leave it out and they just get the heart)
-     piece    - their piece of the final puzzle
+     piece    - their piece of the final puzzle: one letter of FAITH HOPE LOVE,
+                shown on the heart they win
      intro    - optional page shown before the puzzle: { sections: [{heading, text}], button }
      photo    - optional photo step before the puzzle: { heading, text }
      game     - optional: replaces the answer box with a game. Connections:
@@ -33,7 +34,7 @@
                 Each spot can have its own icon. choiceLayout: "tiles" shows the
                 spots as picture tiles instead of a list.
    finalPuzzle:
-     prompt   - shown once all 12 pieces are collected
+     prompt   - shown once all 13 pieces are collected
      answers  - leave [] to reveal the big thing right away,
                 or add answers to make them solve the final puzzle too
      reveal   - the big thing
@@ -42,8 +43,10 @@ const HUNT = {
   title: "A Little Adventure",
   intro: "Thirteen places, thirteen puzzles, thirteen pieces. Visit each spot, solve its puzzle, and collect a piece of the big surprise.",
   finalPuzzle: {
-    prompt: "FINAL PUZZLE PROMPT GOES HERE",
-    answers: [],
+    prompt: "Unscramble the letters on your 13 hearts to find three words.",
+    // FAITH HOPE LOVE, accepted in any order, with or without "and"
+    answers: ["faith hope love", "faith hope and love", "faith love hope", "hope faith love",
+              "hope love faith", "love faith hope", "love hope faith"],
     reveal: "THE BIG THING GOES HERE"
   },
   showDistance: true,
@@ -81,7 +84,7 @@ const HUNT = {
         { name: "Fall Craft Market",       icon: "market", lat: 41.49852, lng: -81.49424, radius: 250,
           puzzle: "MARKET PUZZLE",      answers: ["marketanswer"], prize: "MARKET PRIZE" }
       ],
-      piece: "1" },
+      piece: "P" },
     { name: "Belmont",            icon: "koi",      lat: 37.56199, lng: -122.32197, radius: 80,  puzzle: "PUZZLE 11", answers: ["answer11"], prize: "PRIZE 11", piece: "2" },
     { name: "Santa Cruz",         icon: "beach", choiceLayout: "tiles",
       choices: [
