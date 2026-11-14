@@ -24,6 +24,7 @@
      piece    - their piece of the final puzzle: one letter of FAITH HOPE LOVE,
                 shown on the heart they win
      about    - optional short description of the place, shown before they check in
+     link     - optional { label, url } web link shown under the description
      intro    - optional page shown before the puzzle: { sections: [{heading, text}], button }
      photo    - optional photo step before the puzzle: { heading, text }
      game     - optional: replaces the answer box with a game. Connections:
@@ -146,6 +147,7 @@ const HUNT = {
           } },
         { name: "Fall Craft Market",       icon: "market", lat: 41.49852, lng: -81.49424, radius: 250,
           about: "A seasonal market full of booths from local makers, with handmade gifts, art, treats and cozy fall finds.\n\nOpen:\nSaturday, Nov. 14, 11am–8pm\nSunday, Nov. 15, 12pm–6pm",
+          link: { label: "Market website", url: "https://www.beachwoodplace.com/2026/10/beachwood-fall-craft-vendor-market/" },
           intro: {
             sections: [
               { text: "This is another somewhere I wish we could go together. And I’m sure we will in the future. But for now, pretend I’m just around the corner and you’re going to meet me after the market." },
@@ -329,6 +331,7 @@ button:focus-visible{outline:3px solid var(--ink); outline-offset:3px}
   border:2px solid var(--line); background:var(--bg); color:var(--ink); font-weight:800; font-size:.92rem; text-decoration:none}
 .dirs a:active{transform:translateY(1px)}
 .dirs svg{width:16px; height:16px; flex:none}
+.siteLink{display:inline-block; margin-top:.6rem; font-weight:800; color:var(--heart); text-decoration:underline; text-underline-offset:3px}
 .status.ok{color:var(--ok)} .status.warn{color:var(--warn)}
 .prizeCard{text-align:center}
 .choices{list-style:none; padding:0; margin:1rem 0 0; display:grid; gap:.5rem}
@@ -903,6 +906,7 @@ function placeHead(i, title, subtitle, icon){
 function checkCard(e, i, c, prompt){
   const card = el("section", {class:"card"});
   if (e.about) card.append(el("p", {class:"text"}, e.about));
+  if (e.link) card.append(el("a", {class:"siteLink", href:e.link.url, target:"_blank", rel:"noopener"}, e.link.label + " ›"));
   if (e.lat != null && e.lng != null){
     const ll = e.lat + "," + e.lng;
     const pin = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" fill="#FF4F8B"/><circle cx="12" cy="10" r="2.6" fill="#fff"/></svg>';
