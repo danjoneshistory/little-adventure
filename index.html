@@ -44,6 +44,8 @@
                 Each spot can have its own icon. choiceLayout: "tiles" shows the
                 spots as picture tiles instead of a list.
                 greeting: optional message above the spots (until they earn the piece).
+                zone: optional { lat, lng, radius, about } area they must check in to
+                before the spots are shown (radius in metres; 50 miles = 80467).
    finalPuzzle:
      prompt   - shown once all 13 pieces are collected
      answers  - leave [] to reveal the big thing right away,
@@ -186,6 +188,9 @@ const HUNT = {
       piece: "P" },
     { name: "Belmont",            icon: "koi",      lat: 37.56199, lng: -122.32197, radius: 80,  puzzle: "PUZZLE 11", answers: ["answer11"], prize: "PRIZE 11", piece: "L" },
     { name: "Santa Cruz",         icon: "beach", choiceLayout: "tiles",
+      // About 50 miles around downtown Santa Cruz.
+      zone: { lat: 36.97412, lng: -122.03080, radius: 80467,
+              about: "For this adventure, you’ll be traveling to Santa Cruz, California. Once you’re in the area, tap the button below to see your options." },
       choices: [
         { name: "Mystery Spot",           icon: "mystery-spot", lat: 37.01723, lng: -122.00293, radius: 150,
           about: "A patch of redwood forest in the hills above Santa Cruz where balls seem to roll uphill and people seem to change height. Is it gravity, or is it a trick? You decide.",
@@ -686,6 +691,8 @@ const has = (arr, i) => arr.includes(i);
 const colorOf = i => COLORS[i % COLORS.length];
 const spotKey = (i, k) => i + "-" + k;
 const stepKey = (i, c) => c != null ? spotKey(i, c) : "p" + i;
+// In the area for a place with a zone (or already started / solved there).
+const zoneOpen = i => stepDone("zone" + i, "in") || has(state.solved, i) || state.spotArrived.some(k => k.startsWith(i + "-"));
 function stepDone(key, step){ return !!(state.steps[key] && state.steps[key][step]); }
 function markStep(key, step){ state.steps[key] = state.steps[key] || {}; state.steps[key][step] = true; save(); }
 const PHOTO = key => "hunt-photo-" + key;
@@ -891,6 +898,32 @@ function placeHead(i, title, subtitle, icon){
   return head;
 }
 
+// The "I'm here!" card: description, directions, and the location check.
+// c is a spot index, null for a single place, or "zone" for a place's area check.
+function checkCard(e, i, c, prompt){
+  const card = el("section", {class:"card"});
+  if (e.about) card.append(el("p", {class:"text"}, e.about));
+  if (e.lat != null && e.lng != null){
+    const ll = e.lat + "," + e.lng;
+    const pin = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" fill="#FF4F8B"/><circle cx="12" cy="10" r="2.6" fill="#fff"/></svg>';
+    const link = (label, href) => { const a = el("a", {href, target:"_blank", rel:"noopener"}); a.innerHTML = pin; a.append(label); return a; };
+    const row = el("div", {class:"dirs"});
+    row.append(link("Apple Maps", "https://maps.apple.com/?daddr=" + ll),
+               link("Google Maps", "https://www.google.com/maps/dir/?api=1&destination=" + ll));
+    card.append(el("p", {class:"dirsLabel"}, "Get directions"), row);
+  }
+  card.append(el("p", {class:"text", style: e.about ? "margin-top:1rem; font-weight:800" : "margin-top:1rem"}, prompt));
+  const b = el("button", {type:"button", class:"primary", id:"check"}, "I’m here! Check my location");
+  b.addEventListener("click", () => check(i, c));
+  card.append(b, el("p", {class:"status", id:"status"}));
+  if (TEST){
+    const u = el("button", {type:"button", class:"ghost"}, "Test: open without GPS");
+    u.addEventListener("click", () => arrive(i, c));
+    card.append(u);
+  }
+  return card;
+}
+
 function renderPlace(app, i){
   const p = P[i];
   const c = p.choices ? sub : null;
@@ -900,7 +933,11 @@ function renderPlace(app, i){
     document.title = p.name + " · " + HUNT.title;
     app.append(backBtn("‹ All places", () => go(null)));
     app.append(placeHead(i, p.name));
-    const card = el("section", {class:"card"});
+    if (p.zone && !zoneOpen(i)){
+      app.append(checkCard(p.zone, i, "zone", "When you’re in the area, tap the button below."));
+      return;
+    }
+    const card = el("section", {class:"card" + (flash === "arrive" ? " reveal" : "")});
     card.append(el("p", {class:"text"}, has(state.solved, i)
       ? "You earned this piece! You can still visit the other spots if you like."
       : p.greeting || "Your choice! Which spot are you visiting? You can switch any time."));
@@ -943,28 +980,7 @@ function renderPlace(app, i){
   app.append(placeHead(i, spot ? spot.name : p.name, spot ? p.name : null, spot ? spot.icon : null));
 
   if (!arrived){
-    const card = el("section", {class:"card"});
-    if (e.about) card.append(el("p", {class:"text"}, e.about));
-    if (e.lat != null && e.lng != null){
-      const ll = e.lat + "," + e.lng;
-      const pin = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" fill="#FF4F8B"/><circle cx="12" cy="10" r="2.6" fill="#fff"/></svg>';
-      const link = (label, href) => { const a = el("a", {href, target:"_blank", rel:"noopener"}); a.innerHTML = pin; a.append(label); return a; };
-      const row = el("div", {class:"dirs"});
-      row.append(link("Apple Maps", "https://maps.apple.com/?daddr=" + ll),
-                 link("Google Maps", "https://www.google.com/maps/dir/?api=1&destination=" + ll));
-      card.append(el("p", {class:"dirsLabel"}, "Get directions"), row);
-    }
-    card.append(el("p", {class:"text", style: e.about ? "margin-top:1rem; font-weight:800" : "margin-top:1rem"},
-      e.about ? "When you arrive, tap the button below." : "When you get here, tap the button below to open your puzzle."));
-    const b = el("button", {type:"button", class:"primary", id:"check"}, "I’m here! Check my location");
-    b.addEventListener("click", () => check(i, c));
-    card.append(b, el("p", {class:"status", id:"status"}));
-    if (TEST){
-      const u = el("button", {type:"button", class:"ghost"}, "Test: open without GPS");
-      u.addEventListener("click", () => arrive(i, c));
-      card.append(u);
-    }
-    app.append(card);
+    app.append(checkCard(e, i, c, e.about ? "When you arrive, tap the button below." : "When you get here, tap the button below to open your puzzle."));
     return;
   }
 
@@ -1506,6 +1522,7 @@ function render(){
 }
 
 function arrive(i, c){
+  if (c === "zone"){ markStep("zone" + i, "in"); flash = "arrive"; render(); return; }
   if (c != null && !spotOpen(i, c)) state.spotArrived.push(spotKey(i, c));
   if (!has(state.arrived, i)) state.arrived.push(i);
   save(); flash = "arrive"; render();
@@ -1522,7 +1539,7 @@ function solve(i, c){
 
 function check(i, c){
   const p = P[i], btn = document.getElementById("check");
-  const t = c != null ? p.choices[c] : p;
+  const t = c === "zone" ? p.zone : c != null ? p.choices[c] : p;
   if (t.lat == null || t.lng == null){ setStatus("This place doesn’t have a location set yet.", "warn"); return; }
   if (!("geolocation" in navigator)){ setStatus("This browser can’t share location. Try Safari or Chrome on your phone.", "warn"); return; }
   btn.disabled = true; setStatus("Finding you…");
