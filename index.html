@@ -23,6 +23,7 @@
      prize    - shown when they solve it (optional: leave it out and they just get the heart)
      piece    - their piece of the final puzzle: one letter of FAITH HOPE LOVE,
                 shown on the heart they win
+     about    - optional short description of the place, shown before they check in
      intro    - optional page shown before the puzzle: { sections: [{heading, text}], button }
      photo    - optional photo step before the puzzle: { heading, text }
      game     - optional: replaces the answer box with a game. Connections:
@@ -76,6 +77,7 @@ const HUNT = {
       greeting: "For this adventure, you’ll be traveling to Beachwood, Ohio. But there are three options. You don’t have to do them all to complete the puzzle, just one. But you can do them all if you wish. Feel free to look at each one and choose the one that you want.",
       choices: [
         { name: "Pooh Sticks Bridge",      icon: "bridge", lat: 41.46919, lng: -81.46169, radius: 60,
+          about: "A little footbridge over a stream, just right for a game of Poohsticks. Keep an eye out for good sticks on your way!",
           intro: {
             sections: [
               { heading: "Where the game comes from",
@@ -102,6 +104,7 @@ const HUNT = {
             ]
           } },
         { name: "b.a. Sweetie Candy",      icon: "candy",  lat: 41.42015, lng: -81.73167, radius: 120,
+          about: "A huge, old-fashioned candy store packed with sweets of every kind, from candy you remember from childhood to treats you’ve never heard of.",
           intro: {
             sections: [
               { heading: "Your candy hunt",
@@ -138,6 +141,7 @@ const HUNT = {
             ]
           } },
         { name: "Fall Craft Market",       icon: "market", lat: 41.49852, lng: -81.49424, radius: 250,
+          about: "A seasonal market full of booths from local makers, with handmade gifts, art, treats and cozy fall finds.",
           intro: {
             sections: [
               { heading: "Your market mission",
@@ -181,10 +185,13 @@ const HUNT = {
     { name: "Santa Cruz",         icon: "beach", choiceLayout: "tiles",
       choices: [
         { name: "Mystery Spot",           icon: "mystery-spot", lat: 37.01723, lng: -122.00293, radius: 150,
+          about: "A patch of redwood forest in the hills above Santa Cruz where balls seem to roll uphill and people seem to change height. Is it gravity, or is it a trick? You decide.",
           puzzle: "MYSTERY SPOT PUZZLE", answers: ["mysteryanswer"], prize: "MYSTERY SPOT PRIZE" },
         { name: "Hidden Peak Teahouse",   icon: "teapot",       lat: 36.97603, lng: -122.02721, radius: 60,
+          about: "A cozy teahouse in Santa Cruz, the perfect place to slow down over a pot of tea.",
           puzzle: "TEAHOUSE PUZZLE", answers: ["teaanswer"], prize: "TEAHOUSE PRIZE" },
         { name: "Hole in the Wall Beach", icon: "arch",         lat: 36.99100, lng: -122.16890, radius: 300,
+          about: "A hidden beach on the coast north of Santa Cruz, named for the tunnel worn through its cliffs. Check the tide before you go!",
           puzzle: "BEACH PUZZLE", answers: ["beachanswer"], prize: "BEACH PRIZE" }
       ],
       piece: "A" },
@@ -928,7 +935,9 @@ function renderPlace(app, i){
 
   if (!arrived){
     const card = el("section", {class:"card"});
-    card.append(el("p", {class:"text"}, "Come find me here to open this puzzle!"));
+    if (e.about) card.append(el("p", {class:"text"}, e.about));
+    card.append(el("p", {class:"text", style: e.about ? "margin-top:.8rem; font-weight:800" : ""},
+      e.about ? "When you arrive, tap the button below." : "When you get here, tap the button below to open your puzzle."));
     const b = el("button", {type:"button", class:"primary", id:"check"}, "I’m here! Check my location");
     b.addEventListener("click", () => check(i, c));
     card.append(b, el("p", {class:"status", id:"status"}));
