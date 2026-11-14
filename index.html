@@ -26,6 +26,8 @@
                 shown on the heart they win
      about    - optional short description of the place, shown before they check in
      link     - optional { label, url } web link shown under the description
+     banner   - optional picture (e.g. "images/poohsticks.jpg") shown at the top of the
+                page in place of the round icon
      intro    - optional page shown before the puzzle: { sections: [{heading, text}], button }
                 add playlist: "<Spotify link>" to show a playlist link after the first box
      photo    - optional photo step before the puzzle: { heading, text }
@@ -85,6 +87,7 @@ const HUNT = {
       greeting: "Welcome home! For this adventure there are three options. You don’t have to do them all to complete the puzzle, just one. But you can do them all if you wish. Feel free to look at each one and choose the one that you want.",
       choices: [
         { name: "Pooh Sticks Bridge",      icon: "bridge", lat: 41.46919, lng: -81.46169, radius: 60,
+          banner: "images/poohsticks.jpg",
           quote: { text: "“I wonder what Piglet is doing,” thought Pooh.\n“I wish I were there to be doing it, too.”",
                    by: "A. A. Milne, Winnie the Pooh" },
           about: "A little footbridge over a stream, just right for a game of Poohsticks. Keep an eye out for good sticks on your way!",
@@ -315,6 +318,12 @@ main{max-width:34rem; margin:0 auto; padding:1rem 1.1rem 3rem}
 .bubble{width:150px; height:150px; border-radius:50%; background:var(--c); margin:0 auto; display:flex; align-items:center; justify-content:center;
   box-shadow:0 7px 0 color-mix(in srgb, var(--c) 60%, #3A2140)}
 .bubble svg{width:62%; height:auto}
+/* A picture in place of the round icon. White melts into the page; the edges fade out. */
+.banner{display:block; width:calc(100% + 2rem); max-width:560px; margin:-.5rem -1rem 0; height:auto; mix-blend-mode:multiply;
+  -webkit-mask-image:radial-gradient(ellipse 72% 70% at 50% 50%, #000 62%, transparent 100%);
+          mask-image:radial-gradient(ellipse 72% 70% at 50% 50%, #000 62%, transparent 100%)}
+@media (min-width:600px){ .banner{margin:-.5rem auto 0} }
+@media (prefers-color-scheme: dark){ .banner{mix-blend-mode:normal; -webkit-mask-image:none; mask-image:none; width:100%; margin:0 auto; border-radius:20px} }
 .phead h1{font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; font-size:2rem; margin:1rem 0 0; line-height:1.1}
 .card{background:var(--card); border-radius:24px; padding:1.25rem 1.15rem; margin-top:1.1rem; box-shadow:var(--shadow); border:2px solid var(--line)}
 .card h2{font-family:"Fredoka", ui-rounded, sans-serif; font-weight:600; font-size:1rem; color:var(--heart); margin:0 0 .4rem}
@@ -907,11 +916,15 @@ function backBtn(label, fn){
   b.addEventListener("click", fn);
   return b;
 }
-function placeHead(i, title, subtitle, icon){
+function placeHead(i, title, subtitle, icon, banner){
   const head = el("header", {class:"phead"});
-  const bub = art(ICONS[icon || P[i].icon] || ICONS.star, "bubble");
-  bub.style.setProperty("--c", colorOf(i));
-  head.append(bub, el("h1", {}, title));
+  if (banner) head.append(el("img", {class:"banner", src:banner, alt:""}));
+  else {
+    const bub = art(ICONS[icon || P[i].icon] || ICONS.star, "bubble");
+    bub.style.setProperty("--c", colorOf(i));
+    head.append(bub);
+  }
+  head.append(el("h1", {}, title));
   if (subtitle) head.append(el("p", {class:"where"}, subtitle));
   return head;
 }
@@ -996,7 +1009,7 @@ function renderPlace(app, i){
   document.title = (spot ? spot.name : p.name) + " · " + HUNT.title;
   if (spot) app.append(backBtn("‹ " + p.name, () => go(i, null)));
   else app.append(backBtn("‹ All places", () => go(null)));
-  app.append(placeHead(i, spot ? spot.name : p.name, spot ? p.name : null, spot ? spot.icon : null));
+  app.append(placeHead(i, spot ? spot.name : p.name, spot ? p.name : null, spot ? spot.icon : null, e.banner));
 
   if (!arrived){
     app.append(checkCard(e, i, c, e.about ? "When you arrive, tap the button below." : "When you get here, tap the button below to open your puzzle."));
