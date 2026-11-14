@@ -27,7 +27,7 @@
      about    - optional short description of the place, shown before they check in
      link     - optional { label, url } web link shown under the description
      intro    - optional page shown before the puzzle: { sections: [{heading, text}], button }
-                add playlist: "<Spotify link>" to show a playlist link above the button
+                add playlist: "<Spotify link>" to show a playlist link after the first box
      photo    - optional photo step before the puzzle: { heading, text }
      game     - optional: replaces the answer box with a game. Connections:
                 { type: "connections", groups: [ { theme, words: [4 words], color } x4 ] }
@@ -1012,13 +1012,14 @@ function renderPlace(app, i){
       if (sec.heading) sc.append(el("h2", {}, sec.heading));
       sc.append(el("p", {class:"text body"}, sec.text));
       app.append(sc);
+      // The playlist goes right after the first box.
+      if (n === 0 && e.intro.playlist){
+        const pl = el("section", {class:"card playlist" + (flash === "arrive" ? " reveal" : "")});
+        pl.append(el("p", {class:"text body"}, "🎵 A playlist to listen to while you play"));
+        pl.append(el("a", {class:"siteLink", href:e.intro.playlist, target:"_blank", rel:"noopener"}, "Open in Spotify ›"));
+        app.append(pl);
+      }
     });
-    if (e.intro.playlist){
-      const pl = el("section", {class:"card playlist" + (flash === "arrive" ? " reveal" : "")});
-      pl.append(el("p", {class:"text body"}, "🎵 A playlist to listen to while you play"));
-      pl.append(el("a", {class:"siteLink", href:e.intro.playlist, target:"_blank", rel:"noopener"}, "Open in Spotify ›"));
-      app.append(pl);
-    }
     const b = el("button", {type:"button", class:"primary"}, e.intro.button || "Next");
     b.addEventListener("click", () => { markStep(key, "intro"); flash = "arrive"; render(); window.scrollTo(0, 0); });
     app.append(b);
