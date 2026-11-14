@@ -315,6 +315,12 @@ input[type=text]{
 input[type=text]:focus{border-color:var(--heart); outline:none}
 button:focus-visible{outline:3px solid var(--ink); outline-offset:3px}
 .status{min-height:1.5rem; margin:.8rem 0 0; color:var(--muted); font-weight:700}
+.dirsLabel{margin:.9rem 0 .4rem; font-size:.8rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--muted)}
+.dirs{display:flex; gap:.5rem}
+.dirs a{flex:1; display:flex; align-items:center; justify-content:center; gap:.4rem; padding:.6rem .5rem; border-radius:999px;
+  border:2px solid var(--line); background:var(--bg); color:var(--ink); font-weight:800; font-size:.92rem; text-decoration:none}
+.dirs a:active{transform:translateY(1px)}
+.dirs svg{width:16px; height:16px; flex:none}
 .status.ok{color:var(--ok)} .status.warn{color:var(--warn)}
 .prizeCard{text-align:center}
 .choices{list-style:none; padding:0; margin:1rem 0 0; display:grid; gap:.5rem}
@@ -936,7 +942,16 @@ function renderPlace(app, i){
   if (!arrived){
     const card = el("section", {class:"card"});
     if (e.about) card.append(el("p", {class:"text"}, e.about));
-    card.append(el("p", {class:"text", style: e.about ? "margin-top:.8rem; font-weight:800" : ""},
+    if (e.lat != null && e.lng != null){
+      const ll = e.lat + "," + e.lng;
+      const pin = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" fill="#FF4F8B"/><circle cx="12" cy="10" r="2.6" fill="#fff"/></svg>';
+      const link = (label, href) => { const a = el("a", {href, target:"_blank", rel:"noopener"}); a.innerHTML = pin; a.append(label); return a; };
+      const row = el("div", {class:"dirs"});
+      row.append(link("Apple Maps", "https://maps.apple.com/?daddr=" + ll),
+                 link("Google Maps", "https://www.google.com/maps/dir/?api=1&destination=" + ll));
+      card.append(el("p", {class:"dirsLabel"}, "Get directions"), row);
+    }
+    card.append(el("p", {class:"text", style: e.about ? "margin-top:1rem; font-weight:800" : "margin-top:1rem"},
       e.about ? "When you arrive, tap the button below." : "When you get here, tap the button below to open your puzzle."));
     const b = el("button", {type:"button", class:"primary", id:"check"}, "I’m here! Check my location");
     b.addEventListener("click", () => check(i, c));
