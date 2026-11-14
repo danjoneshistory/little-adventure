@@ -30,6 +30,7 @@
                 page in place of the round icon
      intro    - optional page shown before the puzzle: { sections: [{heading, text}], button }
                 add playlist: "<Spotify link>" to show a playlist link after the first box
+                (playlistText: "..." changes the line above the link)
      photo    - optional photo step before the puzzle: { heading, text }
      game     - optional: replaces the answer box with a game. Connections:
                 { type: "connections", groups: [ { theme, words: [4 words], color } x4 ] }
@@ -130,6 +131,8 @@ const HUNT = {
               { heading: "Your turn",
                 text: "Take your time and have fun looking. Once you’ve found all four (or three, if Canada is hiding), tap the button below." }
             ],
+            playlist: "https://open.spotify.com/playlist/2Q8LDo14MlU1IhzrREOtTp?si=02ede0ad4b8541ef",
+            playlistText: "A playlist to listen to while you hunt for candy",
             button: "I found my candy!"
           },
           photo: {
@@ -171,6 +174,8 @@ const HUNT = {
               { heading: "Your turn",
                 text: "Take your time looking. When you’ve found it, tap the button below." }
             ],
+            playlist: "https://open.spotify.com/playlist/1zJa6Bv69h90Koehp8aJeX?si=c66f313cba5a4d1d",
+            playlistText: "A playlist to listen to while you wander the market",
             button: "Found it!"
           },
           photo: {
@@ -1028,7 +1033,7 @@ function renderPlace(app, i){
       // The playlist goes right after the first box.
       if (n === 0 && e.intro.playlist){
         const pl = el("section", {class:"card playlist" + (flash === "arrive" ? " reveal" : "")});
-        pl.append(el("p", {class:"text body"}, "🎵 A playlist to listen to while you play"));
+        pl.append(el("p", {class:"text body"}, "🎵 " + (e.intro.playlistText || "A playlist to listen to while you play")));
         pl.append(el("a", {class:"siteLink", href:e.intro.playlist, target:"_blank", rel:"noopener"}, "Open in Spotify ›"));
         app.append(pl);
       }
