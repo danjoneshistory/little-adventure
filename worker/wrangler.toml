@@ -1,0 +1,11 @@
+name = "little-adventure-sync"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+workers_dev = true
+preview_urls = false
+
+# Progress and photos for the hunt. The secret HUNT_KEY is set with:
+#   npx wrangler secret put HUNT_KEY
+[[kv_namespaces]]
+binding = "HUNT"
+id = "0a99862ce02342b99ddc2c163792be55"

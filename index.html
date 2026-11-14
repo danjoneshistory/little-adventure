@@ -565,7 +565,59 @@ function load(){
   try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && s.arrived) return Object.assign(blank, s); } catch(e){}
   return blank;
 }
-function save(){ try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} }
+function save(){ saveLocal(); schedulePush(); }
+function saveLocal(){
+  const json = JSON.stringify(state);
+  try { localStorage.setItem(KEY, json); }
+  catch(e){ evictPhotos(); try { localStorage.setItem(KEY, json); } catch(_){} }   // out of room: drop photos that are safe on the server
+}
+
+/* ---------- Saving to the server ----------
+   Progress and photos are also kept on a Cloudflare Worker, so nothing is lost if the
+   phone's browser storage is cleared. The private link ends in #k=<hunt key>; the key is
+   remembered on the phone after the first visit. Test mode (?test) never touches the server. */
+const SYNC_URL = "https://little-adventure-sync.danjoneshistory.workers.dev";
+const huntKey = (() => {
+  if (TEST) return null;
+  const m = location.hash.match(/[#&]k=([A-Za-z0-9_-]+)/);
+  let k = m && m[1];
+  try { if (k) localStorage.setItem("hunt-key", k); else k = localStorage.getItem("hunt-key"); } catch(e){}
+  return k || null;
+})();
+const syncOn = !!huntKey && SYNC_URL.startsWith("https://");
+const api = (path, opts = {}) => fetch(SYNC_URL + path, {...opts, headers: {"X-Hunt-Key": huntKey, ...(opts.headers || {})}});
+function mergeState(a, b){   // progress only grows: lists are combined and anything done stays done
+  const list = k => [...new Set([...(a[k] || []), ...(b[k] || [])])];
+  const steps = {};
+  [a.steps, b.steps].forEach(src => Object.entries(src || {}).forEach(([key, done]) => {
+    steps[key] = steps[key] || {};
+    Object.entries(done || {}).forEach(([s, v]) => { if (v) steps[key][s] = true; });
+  }));
+  return { arrived: list("arrived"), solved: list("solved"), spotArrived: list("spotArrived"), spotSolved: list("spotSolved"),
+           finalSolved: !!(a.finalSolved || b.finalSolved), steps };
+}
+let pushTimer = null, dirty = false;
+function schedulePush(delay = 1200){ if (!syncOn) return; dirty = true; clearTimeout(pushTimer); pushTimer = setTimeout(push, delay); }
+async function push(){
+  if (!syncOn || !dirty) return;
+  dirty = false;
+  try { const r = await api("/state", {method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(state)}); if (!r.ok) throw r.status; }
+  catch(e){ schedulePush(15000); }   // no signal: try again in a bit
+}
+async function pull(){
+  if (!syncOn) return;
+  try {
+    const r = await api("/state"); if (!r.ok) throw r.status;
+    const remote = await r.json();
+    const before = JSON.stringify(state);
+    state = mergeState(state, remote);
+    saveLocal();
+    if (JSON.stringify(mergeState(remote, {})) !== JSON.stringify(state)) schedulePush(0);   // phone had progress the server didn't
+    await fetchMissingPhotos();
+    if (JSON.stringify(state) !== before || photosFetched) { photosFetched = false; render(); }
+  } catch(e){ setTimeout(pull, 15000); }
+  flushPhotos();
+}
 
 let state = load();
 let view = null;
@@ -580,19 +632,47 @@ const stepKey = (i, c) => c != null ? spotKey(i, c) : "p" + i;
 function stepDone(key, step){ return !!(state.steps[key] && state.steps[key][step]); }
 function markStep(key, step){ state.steps[key] = state.steps[key] || {}; state.steps[key][step] = true; save(); }
 const PHOTO = key => "hunt-photo-" + key;
-function getPhoto(key){ try { return localStorage.getItem(PHOTO(key)); } catch(e){ return null; } }
-function setPhoto(key, data){ try { localStorage.setItem(PHOTO(key), data); } catch(e){} }
-function clearPhotos(){ try { Object.keys(localStorage).filter(k => k.startsWith("hunt-photo-")).forEach(k => localStorage.removeItem(k)); } catch(e){} }
+const photoCache = {};          // photos in memory (including ones downloaded from the server)
+let photosFetched = false;
+function pendingPhotos(){ try { return JSON.parse(localStorage.getItem("hunt-photo-pending")) || []; } catch(e){ return []; } }
+function setPending(list){ try { localStorage.setItem("hunt-photo-pending", JSON.stringify(list)); } catch(e){} }
+function getPhoto(key){ if (photoCache[key]) return photoCache[key]; try { return localStorage.getItem(PHOTO(key)); } catch(e){ return null; } }
+function setPhoto(key, data){
+  photoCache[key] = data;
+  try { localStorage.setItem(PHOTO(key), data); } catch(e){}
+  if (syncOn){ setPending([...new Set([...pendingPhotos(), key])]); uploadPhoto(key); }
+}
+async function uploadPhoto(key){
+  const data = getPhoto(key); if (!data) return;
+  try {
+    const r = await api("/photo/" + key, {method:"PUT", headers:{"Content-Type":"text/plain"}, body: data});
+    if (!r.ok) throw r.status;
+    setPending(pendingPhotos().filter(k => k !== key));
+  } catch(e){ setTimeout(() => uploadPhoto(key), 20000); }
+}
+function flushPhotos(){ if (syncOn) pendingPhotos().forEach(uploadPhoto); }
+async function fetchMissingPhotos(){
+  const keys = Object.keys(state.steps).filter(k => state.steps[k].photo && !getPhoto(k));
+  await Promise.all(keys.map(async k => {
+    try { const r = await api("/photo/" + k); if (r.ok){ photoCache[k] = await r.text(); photosFetched = true; } } catch(e){}
+  }));
+}
+function evictPhotos(){   // free up phone storage by dropping photos that are already on the server
+  const pending = pendingPhotos();
+  try { Object.keys(localStorage).filter(k => k.startsWith("hunt-photo-") && k !== "hunt-photo-pending" && !pending.includes(k.slice(11)))
+        .forEach(k => { photoCache[k.slice(11)] = photoCache[k.slice(11)] || localStorage.getItem(k); localStorage.removeItem(k); }); } catch(e){}
+}
+function clearPhotos(){ Object.keys(photoCache).forEach(k => delete photoCache[k]); try { Object.keys(localStorage).filter(k => k.startsWith("hunt-photo-")).forEach(k => localStorage.removeItem(k)); } catch(e){} }
 function shrink(file){
   return new Promise((res, rej) => {
     const img = new Image(), url = URL.createObjectURL(file);
     img.onload = () => {
-      const sc = Math.min(1, 1000 / Math.max(img.width, img.height));
+      const sc = Math.min(1, 900 / Math.max(img.width, img.height));
       const cv = document.createElement("canvas");
       cv.width = Math.round(img.width * sc); cv.height = Math.round(img.height * sc);
       cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
       URL.revokeObjectURL(url);
-      res(cv.toDataURL("image/jpeg", 0.8));
+      res(cv.toDataURL("image/jpeg", 0.75));
     };
     img.onerror = () => { URL.revokeObjectURL(url); rej(); };
     img.src = url;
@@ -1398,6 +1478,9 @@ function check(i, c){
 }
 
 render();
+pull();   // bring in progress saved on the server (does nothing in test mode or without the key)
+addEventListener("online", () => { schedulePush(0); flushPhotos(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden" && dirty){ clearTimeout(pushTimer); push(); } });
 </script>
 </body>
 </html>

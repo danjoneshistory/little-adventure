@@ -1,0 +1,6 @@
+.DS_Store
+.wrangler/
+worker/.wrangler/
+node_modules/
+# The private link with the hunt key. Keep it off GitHub.
+hunt-link.txt
