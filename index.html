@@ -80,16 +80,15 @@ const HUNT = {
           about: "A little footbridge over a stream, just right for a game of Poohsticks. Keep an eye out for good sticks on your way!",
           intro: {
             sections: [
-              { heading: "Why I chose this place",
-                text: "One of the most wonderful things about us has been playing games. And spontaneous games are the best! I’ll never forget you running through the zoo, or playing Connections together in a coffee shop to settle our nerves. If we crossed this bridge together, and someday we will cross this bridge together, we’ll play Pooh Sticks." },
+              { text: "One of the most wonderful things about us has been playing games. And spontaneous games are the best! I’ll never forget you running through the zoo, or playing Connections together in a coffee shop to settle our nerves. If we crossed this bridge together, and someday we will cross this bridge together, we’ll play Pooh Sticks." },
               { heading: "Where the game comes from",
                 text: "Poohsticks was invented by Winnie-the-Pooh himself, in A. A. Milne’s book The House at Pooh Corner (1928). Pooh is crossing a bridge with a fir cone when he trips and drops it into the stream. He watches it float under the bridge and pop out the other side, and a new game is born. Fir cones are hard to tell apart, so sticks soon took their place.\n\nMilne based the bridge on a real wooden footbridge in Ashdown Forest, England, where people still come to play. There’s even a World Poohsticks Championship, first held in 1984." },
               { heading: "How to play",
-                text: "1. Each find a stick, different enough that you can tell them apart.\n2. Stand on the side of the bridge where the water flows in toward you.\n3. Hold your sticks out at the same height and drop them together on “Ready, steady, go!” Drop, don’t throw.\n4. Hurry to the other side. The first stick to float out wins!\n\nPlaying solo? Drop two sticks at once and pick a champion before they land." },
+                text: "1. Find two sticks, different enough that you can tell them apart, and pick the one you’re cheering for.\n2. Stand on the side of the bridge where the water flows in toward you.\n3. Hold both sticks out at the same height and drop them at the same time on “Ready, steady, go!” Drop, don’t throw.\n4. Hurry to the other side. The first stick to float out wins!" },
               { heading: "Your turn",
                 text: "Play at least one round. Best of three if it’s close! Then tap the button below." }
             ],
-            button: "We played!"
+            button: "I played!"
           },
           photo: {
             heading: "Picture time!",
@@ -114,7 +113,7 @@ const HUNT = {
               { heading: "Your turn",
                 text: "Take your time and have fun looking. Once you’ve found all four (or three, if Canada is hiding), tap the button below." }
             ],
-            button: "We found our candy!"
+            button: "I found my candy!"
           },
           photo: {
             heading: "Picture time!",
@@ -973,7 +972,8 @@ function renderPlace(app, i){
   if (e.intro && !solved && !stepDone(key, "intro")){
     e.intro.sections.forEach((sec, n) => {
       const sc = el("section", {class:"card" + (flash === "arrive" ? " reveal" : "")});
-      sc.append(el("h2", {}, sec.heading), el("p", {class:"text body"}, sec.text));
+      if (sec.heading) sc.append(el("h2", {}, sec.heading));
+      sc.append(el("p", {class:"text body"}, sec.text));
       app.append(sc);
     });
     const b = el("button", {type:"button", class:"primary"}, e.intro.button || "Next");
