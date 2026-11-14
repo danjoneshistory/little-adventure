@@ -143,10 +143,10 @@ const HUNT = {
             ]
           } },
         { name: "Fall Craft Market",       icon: "market", lat: 41.49852, lng: -81.49424, radius: 250,
-          about: ["This is another somewhere I wish we could go together. And I’m sure we will in the future. But for now, pretend I’m just around the corner and you’re going to meet me after the market.",
-                  "A seasonal market full of booths from local makers, with handmade gifts, art, treats and cozy fall finds."],
+          about: "A seasonal market full of booths from local makers, with handmade gifts, art, treats and cozy fall finds.",
           intro: {
             sections: [
+              { text: "This is another somewhere I wish we could go together. And I’m sure we will in the future. But for now, pretend I’m just around the corner and you’re going to meet me after the market." },
               { heading: "Your market mission",
                 text: "There are two missions on this one. First, wander the booths and find one thing that reminds you of us. It could be something we’d both love, something that brings back a memory, or something that just makes you smile and think of me.\n\nYour second mission is to mention to some random individual, vendor or buyer, that you are in love. You don’t have to say with whom." },
               { heading: "Your turn",
@@ -944,8 +944,7 @@ function renderPlace(app, i){
 
   if (!arrived){
     const card = el("section", {class:"card"});
-    // about can be one paragraph or a list of them.
-    [].concat(e.about || []).forEach((t, n) => card.append(el("p", {class:"text", style: n ? "margin-top:.75rem" : ""}, t)));
+    if (e.about) card.append(el("p", {class:"text"}, e.about));
     if (e.lat != null && e.lng != null){
       const ll = e.lat + "," + e.lng;
       const pin = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z" fill="#FF4F8B"/><circle cx="12" cy="10" r="2.6" fill="#fff"/></svg>';
