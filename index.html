@@ -21,6 +21,7 @@
      puzzle   - shown once they arrive (line breaks are kept)
      answers  - accepted answers; case, spaces and punctuation are ignored
      prize    - shown when they solve it (optional: leave it out and they just get the heart)
+     quote    - optional { text, by } shown at the top of the win screen
      piece    - their piece of the final puzzle: one letter of FAITH HOPE LOVE,
                 shown on the heart they win
      about    - optional short description of the place, shown before they check in
@@ -83,6 +84,8 @@ const HUNT = {
       greeting: "Welcome home! For this adventure there are three options. You don’t have to do them all to complete the puzzle, just one. But you can do them all if you wish. Feel free to look at each one and choose the one that you want.",
       choices: [
         { name: "Pooh Sticks Bridge",      icon: "bridge", lat: 41.46919, lng: -81.46169, radius: 60,
+          quote: { text: "“I wonder what Piglet is doing,” thought Pooh.\n“I wish I were there to be doing it, too.”",
+                   by: "A. A. Milne, Winnie the Pooh" },
           about: "A little footbridge over a stream, just right for a game of Poohsticks. Keep an eye out for good sticks on your way!",
           intro: {
             sections: [
@@ -479,6 +482,9 @@ label.ghost{display:block; text-align:center; color:var(--muted); border:2px das
   85%{opacity:1}
   100%{transform:translate(var(--x), 108vh) rotate(var(--r)); opacity:0}
 }
+.winQuote{margin:0 0 1.1rem; padding:.9rem 1rem; background:var(--bg); border-radius:18px; border:2px dashed var(--line)}
+.winQuote p{margin:0; font-style:italic; font-weight:700; font-size:1.1rem; line-height:1.5; white-space:pre-line}
+.winQuote footer{margin-top:.5rem; font-size:.9rem; font-weight:800; color:var(--muted)}
 .congrats{font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; font-size:1.8rem; color:var(--heart); margin:0 0 .2rem}
 .prizeCard .home{margin-top:1.3rem}
 
@@ -1074,6 +1080,12 @@ function renderPlace(app, i){
   if (solved){
     const justSolved = flash === "solve";
     const pr = el("section", {class:"card prizeCard" + (justSolved ? " reveal" : "")});
+    if (e.quote){
+      const q = el("blockquote", {class:"winQuote"});
+      q.append(el("p", {}, e.quote.text));
+      if (e.quote.by) q.append(el("footer", {}, "– " + e.quote.by));
+      pr.append(q);
+    }
     pr.append(el("p", {class:"congrats"}, "Congratulations!"));
     const ph0 = getPhoto(stepKey(i, c));
     if (ph0){ pr.append(el("img", {class:"preview keep", src: ph0, alt:"Your photo"})); }
