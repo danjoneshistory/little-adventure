@@ -33,6 +33,10 @@
                   words: [ { word, path: [cell numbers], spangram: true? } ] }
                 Cells are numbered left to right, top to bottom, starting at 0.
                 The grid comes from a layout script, so ask Claude to make a new one.
+                Mini crossword:
+                { type: "crossword", title, rows: ["CUTE.", ...], across: { 1: "clue", ... }, down: { 2: "clue", ... } }
+                Each row is the answer letters, with . for a black square. Clue numbers
+                are worked out from the grid the usual way.
      choices  - optional: instead of one lat/lng, a list of spots to pick from.
                 Each spot gets its own screen and its own puzzle / answers / prize.
                 They can switch between spots any time; solving any one earns the piece.
@@ -134,7 +138,31 @@ const HUNT = {
             heading: "Picture time!",
             text: "Take a picture of yourself with the thing that reminds you of us to open your puzzle."
           },
-          puzzle: "MARKET PUZZLE",      answers: ["marketanswer"], prize: "MARKET PRIZE" }
+          puzzle: "Solve the mini crossword! Tap a square to start typing, and tap it again to switch between Across and Down. You can also tap a clue to jump to it.",
+          game: {
+            type: "crossword",
+            title: "OK Then",
+            rows: ["CUTE.",
+                   ".BUTT",
+                   "MANIA",
+                   "CHALK",
+                   "UNSEE"],
+            across: {
+              1: "With 5A, one of your noticeable features",
+              5: "See 1A",
+              7: "Craze, as in how I feel about you",
+              8: "Powder for bouldering together",
+              9: "Wipe from one’s visual memory, so to speak"
+            },
+            down: {
+              2: "Subway system in Berlin, which we’ll ride together someday",
+              3: "Choices for sushi chefs",
+              4: "One of twelve in a Scrabble set",
+              6: "“______ me, I’m yours!”",
+              7: "Superhero franchise in which Steve Rogers falls in love with Peggy Carter (abbr.)"
+            }
+          },
+          prize: "MARKET PRIZE" }
       ],
       piece: "P" },
     { name: "Belmont",            icon: "koi",      lat: 37.56199, lng: -122.32197, radius: 80,  puzzle: "PUZZLE 11", answers: ["answer11"], prize: "PRIZE 11", piece: "L" },
@@ -296,6 +324,35 @@ button:focus-visible{outline:3px solid var(--ink); outline-offset:3px}
 .cxBtn{font:inherit; font-weight:800; color:var(--ink); background:var(--card); border:2px solid var(--line); border-radius:999px; padding:.65rem; cursor:pointer}
 .cxBtn:disabled, .primary:disabled{opacity:.45; cursor:default}
 .shake{animation:shake .38s ease}
+
+/* Mini crossword */
+.xw{margin-top:1rem; position:relative}
+.xwTitle{font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; font-size:1.05rem; text-align:center; margin:0 0 .5rem; color:var(--muted)}
+.xwBar{display:flex; align-items:stretch; gap:.3rem; background:var(--sky); color:var(--tile-ink); border-radius:14px; padding:.3rem; margin-bottom:.6rem; min-height:3.6rem}
+.xwBar button{font:inherit; font-weight:800; font-size:1.3rem; line-height:1; border:0; background:transparent; color:inherit; padding:0 .45rem; cursor:pointer; border-radius:10px}
+.xwBar p{flex:1; margin:0; display:flex; align-items:center; gap:.45rem; font-weight:700; font-size:.95rem; line-height:1.25; padding:.2rem 0}
+.xwBar b{font-family:"Fredoka", ui-rounded, sans-serif; white-space:nowrap}
+.xwGrid{display:grid; gap:0; border:2.5px solid var(--ink); border-radius:6px; overflow:hidden; max-width:330px; margin:0 auto; background:var(--ink);
+  user-select:none; -webkit-user-select:none}
+.xwCell{position:relative; aspect-ratio:1; background:#fff; border:.5px solid #B9A6BD; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  font-family:"Fredoka", ui-rounded, sans-serif; font-weight:600; font-size:clamp(1.3rem, 8vw, 1.9rem); color:#3A2140; -webkit-tap-highlight-color:transparent}
+.xwCell.blk{background:#3A2140; cursor:default}
+.xwCell.word{background:#D7ECFF}
+.xwCell.cur{background:#FFDB75}
+.xwCell.wrong{color:#D9466F}
+.xwCell.wrong::after{content:""; position:absolute; left:15%; right:15%; top:50%; border-top:2px solid #D9466F; transform:rotate(-30deg)}
+.xwCell.done{background:#C9F0E1}
+.xwCell small{position:absolute; top:2px; left:4px; font-family:"Nunito", sans-serif; font-size:.62rem; font-weight:800; line-height:1; color:#3A2140}
+.xwInput{position:absolute; opacity:0; left:0; top:0; width:1px; height:1px; font-size:16px; border:0; padding:0; pointer-events:none}
+.xwClues{display:grid; grid-template-columns:1fr; gap:.8rem; margin-top:1rem; text-align:left}
+.xwClues h3{font-family:"Fredoka", ui-rounded, sans-serif; font-size:.85rem; letter-spacing:.07em; text-transform:uppercase; color:var(--heart); margin:0 0 .3rem}
+.xwClues ol{list-style:none; margin:0; padding:0; display:grid; gap:.15rem}
+.xwClue{font:inherit; width:100%; text-align:left; display:flex; gap:.5rem; background:transparent; border:0; border-radius:10px; padding:.35rem .5rem; color:var(--ink); cursor:pointer; line-height:1.3}
+.xwClue b{min-width:1.3rem}
+.xwClue.on{background:color-mix(in srgb, var(--sky) 45%, transparent)}
+.xwClue.filled{color:var(--muted)}
+.xwBtns{display:flex; gap:.5rem; justify-content:center; margin-top:.9rem}
+.xwBtns .cxBtn{flex:1; max-width:10rem}
 
 /* Strands */
 .st{margin-top:1rem; text-align:center}
@@ -816,8 +873,9 @@ function renderPlace(app, i){
   const card = el("section", {class:"card" + (flash === "arrive" ? " reveal" : "")});
   card.append(el("h2", {}, "Your puzzle"));
   card.append(el("p", {class:"text"}, e.puzzle));
-  if (!solved && e.game && (e.game.type === "connections" || e.game.type === "strands")){
-    (e.game.type === "strands" ? strands : connections)(card, e.game, () => solve(i, c));
+  const GAMES = {connections, strands, crossword};
+  if (!solved && e.game && GAMES[e.game.type]){
+    GAMES[e.game.type](card, e.game, () => solve(i, c));
     if (TEST){
       const u = el("button", {type:"button", class:"ghost"}, "Test: mark solved");
       u.addEventListener("click", () => solve(i, c));
@@ -862,6 +920,180 @@ function renderPlace(app, i){
     app.append(pr);
     if (justSolved) requestAnimationFrame(() => pr.scrollIntoView({behavior:"smooth", block:"start"}));
   }
+}
+
+/* Mini crossword */
+function crossword(root, game, onWin){
+  const sol = game.rows.map(r => r.toUpperCase());
+  const H = sol.length, W = sol[0].length;
+  const isBlk = (r, c) => r < 0 || c < 0 || r >= H || c >= W || sol[r][c] === ".";
+  const fill = sol.map(row => [...row].map(ch => ch === "." ? "." : ""));
+  const nums = sol.map(row => [...row].map(() => 0));
+  const clues = [];   // {dir:"A"|"D", num, text, cells:[[r,c]...]}
+  let n = 0;
+  for (let r = 0; r < H; r++) for (let c = 0; c < W; c++){
+    if (isBlk(r, c)) continue;
+    const a = isBlk(r, c - 1) && !isBlk(r, c + 1), d = isBlk(r - 1, c) && !isBlk(r + 1, c);
+    if (!a && !d) continue;
+    nums[r][c] = ++n;
+    if (a){ const cells = []; for (let x = c; !isBlk(r, x); x++) cells.push([r, x]); clues.push({dir:"A", num:n, text:(game.across || {})[n] || "", cells}); }
+    if (d){ const cells = []; for (let y = r; !isBlk(y, c); y++) cells.push([y, c]); clues.push({dir:"D", num:n, text:(game.down || {})[n] || "", cells}); }
+  }
+  const order = [...clues.filter(q => q.dir === "A"), ...clues.filter(q => q.dir === "D")];
+  const clueAt = (r, c, dir) => clues.find(q => q.dir === dir && q.cells.some(([y, x]) => y === r && x === c));
+  let cur = [0, 0], dir = "A", wrong = new Set(), over = false, msgTimer;
+  for (let r = 0, f = false; r < H && !f; r++) for (let c = 0; c < W; c++) if (!isBlk(r, c)){ cur = [r, c]; f = true; break; }
+  if (!clueAt(cur[0], cur[1], "A")) dir = "D";
+
+  const wrap = el("div", {class:"xw"});
+  if (game.title) wrap.append(el("p", {class:"xwTitle"}, game.title));
+  const bar = el("div", {class:"xwBar"});
+  const prev = el("button", {type:"button", "aria-label":"Previous clue"}, "‹");
+  const next = el("button", {type:"button", "aria-label":"Next clue"}, "›");
+  const barText = el("p", {"aria-live":"polite"});
+  bar.append(prev, barText, next);
+  const grid = el("div", {class:"xwGrid", role:"grid", "aria-label":"Crossword"});
+  grid.style.gridTemplateColumns = "repeat(" + W + ", minmax(0,1fr))";
+  const cells = sol.map((row, r) => [...row].map((ch, c) => {
+    const d = el("div", {class:"xwCell" + (ch === "." ? " blk" : ""), role:"gridcell"});
+    grid.append(d); return d;
+  }));
+  const inp = el("input", {class:"xwInput", type:"text", autocomplete:"off", autocorrect:"off", autocapitalize:"characters", spellcheck:"false", "aria-label":"Crossword letter", enterkeyhint:"next"});
+  const lists = el("div", {class:"xwClues"});
+  const clueBtns = new Map();
+  [["A", "Across"], ["D", "Down"]].forEach(([dd, label]) => {
+    const sec = el("section"); sec.append(el("h3", {}, label));
+    const ol = el("ol");
+    clues.filter(q => q.dir === dd).forEach(q => {
+      const li = el("li"), b = el("button", {type:"button", class:"xwClue"});
+      b.append(el("b", {}, String(q.num)), el("span", {}, q.text));
+      b.addEventListener("click", () => { if (over) return; dir = q.dir; cur = firstEmpty(q); draw(); focus(); });
+      li.append(b); ol.append(li); clueBtns.set(q, b);
+    });
+    sec.append(ol); lists.append(sec);
+  });
+  const btns = el("div", {class:"xwBtns"});
+  const checkBtn = el("button", {type:"button", class:"cxBtn"}, "Check");
+  const clearBtn = el("button", {type:"button", class:"cxBtn"}, "Clear wrong");
+  btns.append(checkBtn, clearBtn);
+  const msg = el("p", {class:"status", role:"status"});
+  wrap.append(bar, grid, inp, btns, msg, lists);
+  root.append(wrap);
+
+  const active = () => clueAt(cur[0], cur[1], dir) || clueAt(cur[0], cur[1], dir === "A" ? "D" : "A");
+  function firstEmpty(q){ const e = q.cells.find(([r, c]) => !fill[r][c]); return (e || q.cells[0]).slice(); }
+  function say(t, cls){ clearTimeout(msgTimer); msg.textContent = t; msg.className = "status" + (cls ? " " + cls : ""); if (t && cls !== "ok") msgTimer = setTimeout(() => { msg.textContent = ""; }, 2500); }
+
+  function draw(){
+    const q = active(); if (q) dir = q.dir;
+    for (let r = 0; r < H; r++) for (let c = 0; c < W; c++){
+      if (isBlk(r, c)) continue;
+      const d = cells[r][c];
+      const inWord = q && q.cells.some(([y, x]) => y === r && x === c);
+      const isCur = r === cur[0] && c === cur[1];
+      d.className = "xwCell" + (over ? " done" : isCur ? " cur" : inWord ? " word" : "") + (wrong.has(r + "," + c) ? " wrong" : "");
+      d.textContent = fill[r][c];
+      if (nums[r][c]) d.prepend(el("small", {}, String(nums[r][c])));
+    }
+    if (q){ barText.textContent = ""; barText.append(el("b", {}, q.num + (q.dir === "A" ? "A" : "D")), el("span", {}, q.text)); }
+    clueBtns.forEach((b, cq) => {
+      b.className = "xwClue" + (cq === q ? " on" : "") + (cq.cells.every(([r, c]) => fill[r][c]) ? " filled" : "");
+    });
+    checkBtn.disabled = clearBtn.disabled = over;
+  }
+
+  function focus(){ if (over) return; inp.value = " "; try { inp.focus({preventScroll:true}); inp.setSelectionRange(1, 1); } catch (_) {} }
+
+  function step(q, k){ // move to cell k of clue q
+    cur = q.cells[k].slice();
+  }
+  function gotoClue(delta){
+    const q = active(); let k = order.indexOf(q);
+    k = (k + delta + order.length) % order.length;
+    dir = order[k].dir; cur = firstEmpty(order[k]); draw();
+  }
+  function typeLetter(ch){
+    if (over) return;
+    const [r, c] = cur; fill[r][c] = ch; wrong.delete(r + "," + c);
+    const q = active(), k = q.cells.findIndex(([y, x]) => y === r && x === c);
+    // Where next: the next empty square in this word; once the word is full,
+    // the next clue that still has an empty square; if the puzzle is full, just step forward.
+    const empty = ([y, x]) => !fill[y][x];
+    const later = q.cells.slice(k + 1).find(empty) || q.cells.slice(0, k).find(empty);
+    const o = order.indexOf(q);
+    const nextQ = later ? null : [...order.slice(o + 1), ...order.slice(0, o)].find(nq => nq.cells.some(empty));
+    if (later) cur = later.slice();
+    else if (nextQ){ dir = nextQ.dir; cur = firstEmpty(nextQ); }
+    else if (k + 1 < q.cells.length) step(q, k + 1);
+    draw(); checkDone();
+  }
+  function backspace(){
+    if (over) return;
+    const [r, c] = cur;
+    if (fill[r][c]){ fill[r][c] = ""; wrong.delete(r + "," + c); draw(); return; }
+    const q = active(), k = q.cells.findIndex(([y, x]) => y === r && x === c);
+    if (k > 0){ step(q, k - 1); const [y, x] = cur; fill[y][x] = ""; wrong.delete(y + "," + x); }
+    draw();
+  }
+  function move(dr, dc){
+    const nd = dc ? "A" : "D";
+    if (dir !== nd && clueAt(cur[0], cur[1], nd)){ dir = nd; draw(); return; }
+    let [r, c] = cur;
+    do { r += dr; c += dc; } while (r >= 0 && c >= 0 && r < H && c < W && isBlk(r, c));
+    if (r >= 0 && c >= 0 && r < H && c < W) cur = [r, c];
+    draw();
+  }
+  function checkDone(){
+    const full = sol.every((row, r) => [...row].every((ch, c) => ch === "." || fill[r][c]));
+    if (!full) return;
+    const right = sol.every((row, r) => [...row].every((ch, c) => ch === "." || fill[r][c] === ch));
+    if (right){
+      over = true; inp.blur(); draw(); say("You solved it! 💕", "ok");
+      setTimeout(onWin, 1100);
+    } else say("Almost! Something isn’t quite right. Tap Check to find it.", "warn");
+  }
+
+  grid.addEventListener("click", ev => {
+    if (over) return;
+    const d = ev.target.closest(".xwCell"); if (!d || d.classList.contains("blk")) return;
+    const idx = [...grid.children].indexOf(d), r = Math.floor(idx / W), c = idx % W;
+    if (r === cur[0] && c === cur[1]){ const o = dir === "A" ? "D" : "A"; if (clueAt(r, c, o)) dir = o; }
+    else { cur = [r, c]; if (!clueAt(r, c, dir)) dir = dir === "A" ? "D" : "A"; }
+    draw(); focus();
+  });
+  prev.addEventListener("click", () => { gotoClue(-1); focus(); });
+  next.addEventListener("click", () => { gotoClue(1); focus(); });
+  checkBtn.addEventListener("click", () => {
+    wrong = new Set();
+    sol.forEach((row, r) => [...row].forEach((ch, c) => { if (ch !== "." && fill[r][c] && fill[r][c] !== ch) wrong.add(r + "," + c); }));
+    draw();
+    say(wrong.size ? wrong.size + (wrong.size === 1 ? " square is" : " squares are") + " marked. Keep going!" : "Everything so far is right!", wrong.size ? "warn" : "ok");
+  });
+  clearBtn.addEventListener("click", () => {
+    let k = 0;
+    sol.forEach((row, r) => [...row].forEach((ch, c) => { if (ch !== "." && fill[r][c] && fill[r][c] !== ch){ fill[r][c] = ""; k++; } }));
+    wrong = new Set(); draw(); say(k ? "Cleared " + k + (k === 1 ? " square." : " squares.") : "Nothing to clear. Looking good!", k ? "warn" : "ok");
+    focus();
+  });
+
+  // The hidden input holds one space; a letter typed after it is the guess, and an empty box means Backspace.
+  inp.addEventListener("input", () => {
+    const v = inp.value;
+    if (v === "") backspace();
+    else for (const ch of v.replace(/[^a-z]/gi, "").toUpperCase()) if (!over) typeLetter(ch);
+    inp.value = " "; try { inp.setSelectionRange(1, 1); } catch (_) {}
+  });
+  inp.addEventListener("keydown", ev => {
+    const k = ev.key;
+    if (k === "ArrowLeft"){ ev.preventDefault(); move(0, -1); }
+    else if (k === "ArrowRight"){ ev.preventDefault(); move(0, 1); }
+    else if (k === "ArrowUp"){ ev.preventDefault(); move(-1, 0); }
+    else if (k === "ArrowDown"){ ev.preventDefault(); move(1, 0); }
+    else if (k === "Enter" || k === "Tab"){ ev.preventDefault(); gotoClue(ev.shiftKey ? -1 : 1); }
+    else if (k === "Backspace" && inp.value === " "){ ev.preventDefault(); backspace(); }
+    else if (k === " "){ ev.preventDefault(); const o = dir === "A" ? "D" : "A"; if (clueAt(cur[0], cur[1], o)){ dir = o; draw(); } }
+  });
+  draw();
 }
 
 /* Strands game */
