@@ -27,6 +27,7 @@
      about    - optional short description of the place, shown before they check in
      link     - optional { label, url } web link shown under the description
      intro    - optional page shown before the puzzle: { sections: [{heading, text}], button }
+                add playlist: "<Spotify link>" to show a playlist link above the button
      photo    - optional photo step before the puzzle: { heading, text }
      game     - optional: replaces the answer box with a game. Connections:
                 { type: "connections", groups: [ { theme, words: [4 words], color } x4 ] }
@@ -97,6 +98,7 @@ const HUNT = {
               { heading: "Your turn",
                 text: "Play at least one round. Best of three if it’s close! Then tap the button below." }
             ],
+            playlist: "https://open.spotify.com/playlist/6Nk5FVoLIeoU1cYWc4ftes?si=7397ac3ff6574602",
             button: "I played!"
           },
           photo: {
@@ -1011,6 +1013,12 @@ function renderPlace(app, i){
       sc.append(el("p", {class:"text body"}, sec.text));
       app.append(sc);
     });
+    if (e.intro.playlist){
+      const pl = el("section", {class:"card playlist" + (flash === "arrive" ? " reveal" : "")});
+      pl.append(el("p", {class:"text body"}, "🎵 A playlist to listen to while you play"));
+      pl.append(el("a", {class:"siteLink", href:e.intro.playlist, target:"_blank", rel:"noopener"}, "Open in Spotify ›"));
+      app.append(pl);
+    }
     const b = el("button", {type:"button", class:"primary"}, e.intro.button || "Next");
     b.addEventListener("click", () => { markStep(key, "intro"); flash = "arrive"; render(); window.scrollTo(0, 0); });
     app.append(b);
