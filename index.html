@@ -28,6 +28,11 @@
      game     - optional: replaces the answer box with a game. Connections:
                 { type: "connections", groups: [ { theme, words: [4 words], color } x4 ] }
                 color is yellow, green, blue or purple (easiest to hardest).
+                Strands:
+                { type: "strands", theme, hints, rows: [letter rows],
+                  words: [ { word, path: [cell numbers], spangram: true? } ] }
+                Cells are numbered left to right, top to bottom, starting at 0.
+                The grid comes from a layout script, so ask Claude to make a new one.
      choices  - optional: instead of one lat/lng, a list of spots to pick from.
                 Each spot gets its own screen and its own puzzle / answers / prize.
                 They can switch between spots any time; solving any one earns the piece.
@@ -93,7 +98,29 @@ const HUNT = {
             heading: "Picture time!",
             text: "Line up your candies and take a picture of them to open your puzzle."
           },
-          puzzle: "CANDY PUZZLE",       answers: ["candyanswer"],  prize: "CANDY PRIZE" },
+          puzzle: "Find the candies hidden in the letters. Drag through letters that touch (sideways, up, down or diagonally), or tap them one at a time and tap the last letter again to check. One special word stretches all the way across the board. Every letter gets used!",
+          game: {
+            type: "strands",
+            theme: "Sweet on you",
+            hints: 3,
+            rows: ["FDGICEC",
+                   "URETMAR",
+                   "TAHEEWE",
+                   "SYEYATS",
+                   "RBMFFYL",
+                   "AEGMEFA",
+                   "ILUHCTF",
+                   "MKCOOLA"],
+            words: [
+              { word: "SWEETHEART",    path: [27,19,18,17,10,16,23,15,8,14], spangram: true },
+              { word: "FUDGE",         path: [0,7,1,2,9] },
+              { word: "ICECREAM",      path: [3,4,5,6,13,20,12,11] },
+              { word: "GUMMYBEARS",    path: [37,44,38,30,22,29,36,35,28,21] },
+              { word: "LAFFYTAFFY",    path: [34,41,48,40,33,26,25,31,32,24] },
+              { word: "MILKCHOCOLATE", path: [49,42,43,50,51,45,52,46,53,54,55,47,39] }
+            ]
+          },
+          prize: "CANDY PRIZE" },
         { name: "Fall Craft Market",       icon: "market", lat: 41.49852, lng: -81.49424, radius: 250,
           puzzle: "MARKET PUZZLE",      answers: ["marketanswer"], prize: "MARKET PRIZE" }
       ],
@@ -257,6 +284,28 @@ button:focus-visible{outline:3px solid var(--ink); outline-offset:3px}
 .cxBtn{font:inherit; font-weight:800; color:var(--ink); background:var(--card); border:2px solid var(--line); border-radius:999px; padding:.65rem; cursor:pointer}
 .cxBtn:disabled, .primary:disabled{opacity:.45; cursor:default}
 .shake{animation:shake .38s ease}
+
+/* Strands */
+.st{margin-top:1rem; text-align:center}
+.stTheme{background:var(--sky); color:var(--tile-ink); border-radius:16px; padding:.5rem .75rem; margin-bottom:.4rem}
+.stTheme span{display:block; font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.07em}
+.stTheme strong{font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; font-size:1.2rem}
+.stWord{min-height:1.9rem; margin:.3rem 0; font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; font-size:1.3rem; letter-spacing:.08em; color:var(--ink)}
+.stWord.ok{color:var(--ok)} .stWord.warn{color:var(--warn); font-size:1rem; letter-spacing:0}
+.stBoard{position:relative; display:grid; grid-template-columns:repeat(var(--cols), minmax(0,1fr)); gap:3px; max-width:360px; margin:0 auto;
+  touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none}
+.stLines{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; overflow:visible; z-index:0}
+.stCell{position:relative; z-index:1; aspect-ratio:1; width:100%; padding:0; border:0; border-radius:50%; background:transparent; cursor:pointer;
+  font:inherit; font-family:"Fredoka", ui-rounded, sans-serif; font-weight:600; font-size:clamp(1rem, 5.2vw, 1.35rem); color:var(--ink);
+  -webkit-tap-highlight-color:transparent; touch-action:none}
+.stCell.sel{background:var(--ink); color:var(--card)}
+.stCell.found{background:var(--sky); color:var(--tile-ink); cursor:default}
+.stCell.span{background:var(--butter); color:var(--tile-ink); cursor:default}
+.stCell.hint{outline:2.5px dashed var(--heart); outline-offset:-3px}
+.stProg{color:var(--muted); font-weight:700; margin:.8rem 0 .5rem}
+.stBtns{display:flex; justify-content:center}
+.stBtns .cxBtn{min-width:9rem}
+.cxBtn:disabled{opacity:.45; cursor:default}
 @keyframes shake{0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)}}
 .pop{animation:pop .35s ease}
 .text.body{font-weight:600; font-size:1.05rem; line-height:1.55}
@@ -755,8 +804,8 @@ function renderPlace(app, i){
   const card = el("section", {class:"card" + (flash === "arrive" ? " reveal" : "")});
   card.append(el("h2", {}, "Your puzzle"));
   card.append(el("p", {class:"text"}, e.puzzle));
-  if (!solved && e.game && e.game.type === "connections"){
-    connections(card, e.game, () => solve(i, c));
+  if (!solved && e.game && (e.game.type === "connections" || e.game.type === "strands")){
+    (e.game.type === "strands" ? strands : connections)(card, e.game, () => solve(i, c));
     if (TEST){
       const u = el("button", {type:"button", class:"ghost"}, "Test: mark solved");
       u.addEventListener("click", () => solve(i, c));
@@ -801,6 +850,164 @@ function renderPlace(app, i){
     app.append(pr);
     if (justSolved) requestAnimationFrame(() => pr.scrollIntoView({behavior:"smooth", block:"start"}));
   }
+}
+
+/* Strands game */
+function strands(root, game, onWin){
+  const rows = game.rows.map(r => r.toUpperCase());
+  const C = rows[0].length, letters = rows.join("");
+  const words = game.words.map(w => ({word: w.word.toUpperCase(), path: w.path, span: !!w.spangram, key: w.path.join(",")}));
+  const owner = new Array(letters.length).fill(null);   // cell -> found word
+  let sel = [], dragging = false, moved = false, lastPt = [0, 0], over = false, hint = null, hintsLeft = game.hints ?? 3, msgTimer;
+
+  const wrap = el("div", {class:"st"});
+  const theme = el("div", {class:"stTheme"});
+  theme.append(el("span", {}, "Today’s theme"), el("strong", {}, game.theme));
+  const shown = el("p", {class:"stWord", "aria-live":"polite"});
+  const board = el("div", {class:"stBoard", role:"group", "aria-label":"Letter board"});
+  board.style.setProperty("--cols", C);
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("class", "stLines"); svg.setAttribute("aria-hidden", "true");
+  board.append(svg);
+  const cells = [...letters].map((ch, k) => { const b = el("button", {type:"button", class:"stCell", "aria-label": ch}, ch); board.append(b); return b; });
+  const prog = el("p", {class:"stProg"});
+  const btns = el("div", {class:"stBtns"});
+  const hintBtn = el("button", {type:"button", class:"cxBtn"});
+  btns.append(hintBtn);
+  wrap.append(theme, shown, board, prog, btns);
+  root.append(wrap);
+
+  const rc = k => [Math.floor(k / C), k % C];
+  const adjacent = (a, b) => { const [ra, ca] = rc(a), [rb, cb] = rc(b); return a !== b && Math.abs(ra - rb) <= 1 && Math.abs(ca - cb) <= 1; };
+  const nFound = () => words.filter(w => w.found).length;
+
+  function say(text, cls){
+    clearTimeout(msgTimer);
+    shown.textContent = text; shown.className = "stWord" + (cls ? " " + cls : "");
+    if (cls) msgTimer = setTimeout(() => { if (!sel.length) { shown.textContent = ""; shown.className = "stWord"; } }, 1400);
+  }
+
+  function draw(){
+    cells.forEach((b, k) => {
+      const w = owner[k];
+      b.className = "stCell" + (w ? (w.span ? " span" : " found") : sel.includes(k) ? " sel" : "") + (!w && hint && hint.path.includes(k) ? " hint" : "");
+      b.disabled = over;
+    });
+    if (sel.length) say(sel.map(k => letters[k]).join(""));
+    prog.textContent = nFound() + " of " + words.length + " theme words found";
+    hintBtn.textContent = hintsLeft ? "Hint (" + hintsLeft + " left)" : "No hints left";
+    hintBtn.disabled = over || !hintsLeft || !!hint;
+    lines();
+  }
+
+  function lines(){
+    const box = board.getBoundingClientRect();
+    if (!box.width) return;
+    const ctr = k => { const r = cells[k].getBoundingClientRect(); return [r.left + r.width / 2 - box.left, r.top + r.height / 2 - box.top]; };
+    const w = cells[0].getBoundingClientRect().width * 0.34;
+    svg.setAttribute("viewBox", "0 0 " + box.width + " " + box.height);
+    svg.textContent = "";
+    const line = (path, color) => {
+      if (path.length < 2) return;
+      const pl = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      pl.setAttribute("points", path.map(k => ctr(k).join(",")).join(" "));
+      pl.setAttribute("fill", "none"); pl.setAttribute("stroke", color); pl.setAttribute("stroke-width", w);
+      pl.setAttribute("stroke-linecap", "round"); pl.setAttribute("stroke-linejoin", "round");
+      svg.append(pl);
+    };
+    words.filter(x => x.found).forEach(x => line(x.path, x.span ? "var(--butter)" : "var(--sky)"));
+    line(sel, "var(--ink)");
+  }
+
+  function submit(){
+    const picked = sel; sel = [];
+    if (picked.length < 2){ draw(); return; }
+    const text = picked.map(k => letters[k]).join("");
+    const hit = words.find(w => !w.found && w.key === picked.join(","));
+    if (hit){
+      hit.found = true; hit.path.forEach(k => owner[k] = hit);
+      if (hint === hit) hint = null;
+      draw();
+      say(hit.span ? "SPANGRAM! " + hit.word : hit.word, "ok");
+      hit.path.forEach(k => cells[k].classList.add("pop"));
+      if (nFound() === words.length){
+        over = true; draw(); say("You found them all!", "ok");
+        setTimeout(onWin, 1000);
+      }
+      return;
+    }
+    draw();
+    const already = words.some(w => w.found && w.word === text);
+    say(already ? "Already found!" : picked.length < 4 ? "Too short" : "Not a theme word", "warn");
+    picked.forEach(k => { cells[k].classList.remove("shake"); void cells[k].offsetWidth; cells[k].classList.add("shake"); });
+  }
+
+  // Which free cell is under the finger? Only counts near the middle of a letter, so diagonals are easy.
+  function cellAt(x, y){
+    for (let k = 0; k < cells.length; k++){
+      if (owner[k]) continue;
+      const r = cells[k].getBoundingClientRect();
+      const dx = x - (r.left + r.width / 2), dy = y - (r.top + r.height / 2);
+      if (dx * dx + dy * dy <= (r.width * 0.42) ** 2) return k;
+    }
+    return null;
+  }
+
+  board.addEventListener("pointerdown", ev => {
+    if (over) return;
+    const k = cellAt(ev.clientX, ev.clientY);
+    if (k == null) return;
+    ev.preventDefault();
+    try { board.setPointerCapture(ev.pointerId); } catch (_) {}
+    const last = sel[sel.length - 1];
+    if (sel.length && k === last){ submit(); return; }          // tap the last letter again to check
+    if (sel.includes(k)) sel = sel.slice(0, sel.indexOf(k) + 1); // tap back along the path
+    else if (sel.length && adjacent(last, k)) sel.push(k);      // tap the next letter
+    else sel = [k];                                             // start a new word
+    dragging = true; moved = false; lastPt = [ev.clientX, ev.clientY];
+    draw();
+  });
+  function dragTo(x, y){
+    const k = cellAt(x, y);
+    if (k == null || k === sel[sel.length - 1]) return false;
+    if (k === sel[sel.length - 2]){ sel.pop(); moved = true; return true; }
+    if (!sel.includes(k) && adjacent(sel[sel.length - 1], k)){ sel.push(k); moved = true; return true; }
+    return false;
+  }
+  board.addEventListener("pointermove", ev => {
+    if (!dragging) return;
+    // Check points along the way too, so a fast swipe doesn't skip a letter.
+    const [x0, y0] = lastPt, x1 = ev.clientX, y1 = ev.clientY;
+    const steps = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 6));
+    let changed = false;
+    for (let s = 1; s <= steps; s++) changed = dragTo(x0 + (x1 - x0) * s / steps, y0 + (y1 - y0) * s / steps) || changed;
+    lastPt = [x1, y1];
+    if (changed) draw();
+  });
+  const end = () => { if (!dragging) return; dragging = false; if (moved && sel.length > 1) submit(); };
+  board.addEventListener("pointerup", end);
+  board.addEventListener("pointercancel", end);
+  // Keyboard: Enter/Space on a letter works like a tap.
+  cells.forEach((b, k) => b.addEventListener("keydown", ev => {
+    if (ev.key !== "Enter" && ev.key !== " ") return;
+    ev.preventDefault(); if (over || owner[k]) return;
+    const last = sel[sel.length - 1];
+    if (sel.length && k === last) submit();
+    else { if (sel.includes(k)) sel = sel.slice(0, sel.indexOf(k) + 1); else if (sel.length && adjacent(last, k)) sel.push(k); else sel = [k]; draw(); }
+  }));
+
+  hintBtn.addEventListener("click", () => {
+    if (over || !hintsLeft || hint) return;
+    const left = words.filter(w => !w.found && !w.span);
+    hint = left.length ? left[Math.floor(Math.random() * left.length)] : words.find(w => !w.found);
+    hintsLeft--; draw();
+    say("Hint: the dashed letters make one word", "ok");
+  });
+
+  let rt; addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => board.isConnected && lines(), 100); });
+  draw();
+  requestAnimationFrame(lines);
+  if (document.fonts) document.fonts.ready.then(() => board.isConnected && lines());
 }
 
 /* Connections game */
