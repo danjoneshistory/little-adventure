@@ -1099,7 +1099,7 @@ function crossword(root, game, onWin){
 function strands(root, game, onWin){
   const rows = game.rows.map(r => r.toUpperCase());
   const C = rows[0].length, letters = rows.join("");
-  const words = game.words.map(w => ({word: w.word.toUpperCase(), path: w.path, span: !!w.spangram, key: w.path.join(",")}));
+  const words = game.words.map(w => ({word: w.word.toUpperCase(), path: w.path, span: !!w.spangram}));
   const owner = new Array(letters.length).fill(null);   // cell -> found word
   let sel = [], dragging = false, moved = false, lastPt = [0, 0], over = false, hint = null, hintsLeft = game.hints ?? 3, msgTimer;
 
@@ -1166,9 +1166,11 @@ function strands(root, game, onWin){
     const picked = sel; sel = [];
     if (picked.length < 2){ draw(); return; }
     const text = picked.map(k => letters[k]).join("");
-    const hit = words.find(w => !w.found && w.key === picked.join(","));
+    // Right word on that word's squares, in any order (so either of two touching F's can come first).
+    const same = w => w.path.length === picked.length && picked.every(k => w.path.includes(k));
+    const hit = words.find(w => !w.found && w.word === text && same(w));
     if (hit){
-      hit.found = true; hit.path.forEach(k => owner[k] = hit);
+      hit.found = true; hit.path = picked; hit.path.forEach(k => owner[k] = hit);
       if (hint === hit) hint = null;
       draw();
       say(hit.span ? "SPANGRAM! " + hit.word : hit.word, "ok");
