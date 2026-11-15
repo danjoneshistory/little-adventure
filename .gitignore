@@ -4,3 +4,5 @@ worker/.wrangler/
 node_modules/
 # The private link with the hunt key. Keep it off GitHub.
 hunt-link.txt
+# Hunt photos downloaded by tools/get_photos.mjs. Private, keep off GitHub.
+photos/
