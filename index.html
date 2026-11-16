@@ -1023,21 +1023,39 @@ function renderPlace(app, i){
 
   const key = stepKey(i, c);
 
-  // Step: intro page
-  if (e.intro && !solved && !stepDone(key, "intro")){
+  // The intro boxes, with the playlist right after the first one.
+  // Once solved they're shown again to look back on, minus the "Your turn" box.
+  const introCards = lookBack => {
+    const rv = flash === "arrive" ? " reveal" : "";
     e.intro.sections.forEach((sec, n) => {
-      const sc = el("section", {class:"card" + (flash === "arrive" ? " reveal" : "")});
+      if (lookBack && sec.heading === "Your turn") return;
+      const sc = el("section", {class:"card" + rv});
       if (sec.heading) sc.append(el("h2", {}, sec.heading));
       sc.append(el("p", {class:"text body"}, sec.text));
       app.append(sc);
-      // The playlist goes right after the first box.
       if (n === 0 && e.intro.playlist){
-        const pl = el("section", {class:"card playlist" + (flash === "arrive" ? " reveal" : "")});
+        const pl = el("section", {class:"card playlist" + rv});
         pl.append(el("p", {class:"text body"}, "🎵 " + (e.intro.playlistText || "A playlist to listen to while you play")));
         pl.append(el("a", {class:"siteLink", href:e.intro.playlist, target:"_blank", rel:"noopener"}, "Open in Spotify ›"));
         app.append(pl);
       }
     });
+  };
+
+  // Solved: show the description and intro again above the puzzle and prize.
+  if (solved){
+    if (e.about || e.link){
+      const ab = el("section", {class:"card"});
+      if (e.about) ab.append(el("p", {class:"text"}, e.about));
+      if (e.link) ab.append(el("a", {class:"siteLink", href:e.link.url, target:"_blank", rel:"noopener"}, e.link.label + " ›"));
+      app.append(ab);
+    }
+    if (e.intro) introCards(true);
+  }
+
+  // Step: intro page
+  if (e.intro && !solved && !stepDone(key, "intro")){
+    introCards(false);
     const b = el("button", {type:"button", class:"primary"}, e.intro.button || "Next");
     b.addEventListener("click", () => { markStep(key, "intro"); flash = "arrive"; render(); window.scrollTo(0, 0); });
     app.append(b);
