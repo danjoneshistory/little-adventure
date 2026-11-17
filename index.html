@@ -217,23 +217,31 @@ const HUNT = {
           } }
       ],
       piece: "P" },
-    { name: "Belmont",            icon: "koi",      lat: 37.56199, lng: -122.32197, radius: 80,
+    { name: "Belmont",            icon: "koi",
+      // Step 1: check in anywhere within about 30 miles of Belmont (SFO and San Jose airports count).
+      zone: { lat: 37.52021, lng: -122.27580, radius: 48280,
+              about: "This adventure takes you to Belmont, California, on the San Francisco Peninsula. Once you’re in the area, tap the button below to find out where to go." },
+      // Step 2: shown after the area check-in, above the garden's own check-in.
+      greeting: "Welcome to Belmont! Your next stop is the Japanese Garden in Central Park, in San Mateo, just a few minutes north.\n\nBefore you go, you’ll need one thing: a square sheet of paper. Origami paper is best, but any paper you can trim into a square will do (about 6 inches across is just right). A pen would be good too.\n\nCheck the garden’s hours before you head over.",
+      choices: [
+        { name: "Japanese Garden",    icon: "koi",      lat: 37.56199, lng: -122.32197, radius: 80,
       quote: { text: "To see a World in a Grain of Sand\nAnd a Heaven in a Wild Flower,\nHold Infinity in the palm of your hand\nAnd Eternity in an hour.",
                by: "William Blake, Auguries of Innocence" },
-      about: "The Japanese Garden in San Mateo’s Central Park: a quiet walled garden with a koi pond, stone lanterns, little bridges and a waterfall, all tucked into the middle of town.",
+      about: "A quiet walled garden in San Mateo’s Central Park, with a koi pond, stone lanterns, little bridges and a waterfall, all tucked into the middle of town.",
       intro: {
         sections: [
           { text: "Sometimes we are racing, and sometimes we are quiet. You are a place of mirth, but also of peace. Even though I am not there with you to experience it, I wanted you to have a moment of quiet beauty—an oasis in a desert. Take this time for you. Breathe deep. Let your thoughts be still." },
           { heading: "Your garden mission",
-            text: "1. Find a quiet spot, maybe a bench or a place by the koi pond, and sit for a few minutes. Phone away. Just breathe and listen to the water.\n2. When your thoughts are still, let someone you love come to mind.\n3. Send them a text telling them you love them, and one thing about them you’re grateful for. It can be anyone: family, a friend, or someone you haven’t talked to in a while." },
+            text: "In Japan, the crane is a symbol of peace, good fortune and long life. An old legend says that anyone who folds a thousand paper cranes is granted a wish. Today you only need to fold one.\n\n1. Find a quiet spot, maybe a bench or a place by the koi pond. Breathe deep and listen to the water for a minute.\n2. On one side of your paper, write a small wish for us. It will end up folded away inside the crane.\n3. Fold your crane slowly, one crease at a time. There’s no rush. If it comes out a little crooked, that just gives it character.",
+            link: { label: "How to fold a paper crane", url: "https://www.origami-instructions.com/origami-crane.html" } },
           { heading: "Your turn",
-            text: "Take all the time you want. When your text is sent, tap the button below." }
+            text: "When your crane is finished, tap the button below." }
         ],
-        button: "I sent it!"
+        button: "My crane is folded!"
       },
       photo: {
         heading: "Picture time!",
-        text: "Take a picture of your favorite view in the garden to open your puzzle."
+        text: "Take a picture of your crane in the garden to open your puzzle."
       },
       puzzle: "Make words from the letters in the hive. Every word has at least 4 letters and must use the yellow center letter. Letters can be used more than once. Find 15 words, including the pangram, the one word that uses every letter.",
       game: {
@@ -245,7 +253,8 @@ const HUNT = {
                 "ENTRY", "NINNY", "NITTY", "RETRY", "SISSY", "TEENY", "TERRY", "TESTY", "TINNY", "TRYST",
                 "ENTITY", "NINETY", "SENTRY", "TEENSY", "TRYSTS", "TRINITY", "ENTIRETY", "ETERNITY", "INTENSITY",
                 "SERENITY"]
-      },
+      } }
+      ],
       piece: "L" },
     { name: "Santa Cruz",         icon: "beach", choiceLayout: "tiles",
       // About 50 miles around downtown Santa Cruz.
@@ -1140,7 +1149,9 @@ function checkCard(e, i, c, prompt){
 
 function renderPlace(app, i){
   const p = P[i];
-  const c = p.choices ? sub : null;
+  // A place with just one spot skips the menu: area check-in, then straight to that spot.
+  const single = p.choices && p.choices.length === 1;
+  const c = p.choices ? (single && (!p.zone || zoneOpen(i)) ? 0 : sub) : null;
 
   // Choice menu
   if (p.choices && c == null){
@@ -1189,11 +1200,16 @@ function renderPlace(app, i){
   const arrived = spot ? spotOpen(i, c) : has(state.arrived, i);
   const solved = spot ? spotDone(i, c) : has(state.solved, i);
   document.title = (spot ? spot.name : p.name) + " · " + HUNT.title;
-  if (spot) app.append(backBtn("‹ " + p.name, () => go(i, null)));
+  if (spot && !single) app.append(backBtn("‹ " + p.name, () => go(i, null)));
   else app.append(backBtn("‹ All places", () => go(null)));
   app.append(placeHead(i, spot ? spot.name : p.name, spot ? p.name : null, spot ? spot.icon : null, e.banner));
 
   if (!arrived){
+    if (single && p.greeting){   // e.g. where to go next and what to bring
+      const g = el("section", {class:"card" + (flash === "arrive" ? " reveal" : "")});
+      g.append(el("p", {class:"text body"}, p.greeting));
+      app.append(g);
+    }
     app.append(checkCard(e, i, c, e.about ? "When you arrive, tap the button below." : "When you get here, tap the button below to open your puzzle."));
     return;
   }
@@ -1209,6 +1225,7 @@ function renderPlace(app, i){
       const sc = el("section", {class:"card" + rv});
       if (sec.heading) sc.append(el("h2", {}, sec.heading));
       sc.append(el("p", {class:"text body"}, sec.text));
+      if (sec.link) sc.append(el("a", {class:"siteLink", href:sec.link.url, target:"_blank", rel:"noopener"}, sec.link.label + " ›"));
       app.append(sc);
       if (n === 0 && e.intro.playlist){
         const pl = el("section", {class:"card playlist" + rv});
