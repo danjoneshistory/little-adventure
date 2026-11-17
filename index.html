@@ -44,6 +44,15 @@
                 { type: "crossword", title, rows: ["CUTE.", ...], across: { 1: "clue", ... }, down: { 2: "clue", ... } }
                 Each row is the answer letters, with . for a black square. Clue numbers
                 are worked out from the grid the usual way.
+                Spelling Bee:
+                { type: "spellingbee", center: "Y", letters: "SERNIT", goal: 15, words: [...] }
+                Only words in the list count. They win after finding `goal` words plus
+                every pangram (a word using all 7 letters).
+                Wordle:
+                { type: "wordle", answer: "HONEY" }   (any guess of the right length is allowed)
+                Word ladder:
+                { type: "ladder", ladders: [ { title, start, end, rungs: [ { word, clue } ] } ] }
+                Each rung changes one letter of the word before it.
      choices  - optional: instead of one lat/lng, a list of spots to pick from.
                 Each spot gets its own screen and its own puzzle / answers / prize.
                 They can switch between spots any time; solving any one earns the piece.
@@ -208,7 +217,36 @@ const HUNT = {
           } }
       ],
       piece: "P" },
-    { name: "Belmont",            icon: "koi",      lat: 37.56199, lng: -122.32197, radius: 80,  puzzle: "PUZZLE 11", answers: ["answer11"], prize: "PRIZE 11", piece: "L" },
+    { name: "Belmont",            icon: "koi",      lat: 37.56199, lng: -122.32197, radius: 80,
+      quote: { text: "To see a World in a Grain of Sand\nAnd a Heaven in a Wild Flower,\nHold Infinity in the palm of your hand\nAnd Eternity in an hour.",
+               by: "William Blake, Auguries of Innocence" },
+      about: "The Japanese Garden in San Mateo’s Central Park: a quiet walled garden with a koi pond, stone lanterns, little bridges and a waterfall, all tucked into the middle of town.",
+      intro: {
+        sections: [
+          { text: "✏️ YOUR MESSAGE GOES HERE: why you chose this place." },
+          { heading: "Your garden mission",
+            text: "Slow down. This garden was made for it.\n\n1. Find the koi pond and count how many fish you can see at once.\n2. Pick out the one koi that would be me, and the one that would be you.\n3. Find the quietest spot in the garden and sit there for a few minutes. No phone, just listen." },
+          { heading: "Your turn",
+            text: "Take all the time you want. When you’re ready, tap the button below." }
+        ],
+        button: "I found my peace!"
+      },
+      photo: {
+        heading: "Picture time!",
+        text: "Take a picture of your favorite view in the garden to open your puzzle."
+      },
+      puzzle: "Make words from the letters in the hive. Every word has at least 4 letters and must use the yellow center letter. Letters can be used more than once. Find 15 words, including the pangram, the one word that uses every letter.",
+      game: {
+        type: "spellingbee",
+        center: "Y",
+        letters: "SERNIT",
+        goal: 15,
+        words: ["EYES", "RYES", "STYE", "STYES", "TINY", "TREY", "TREYS", "TYRE", "TYRES", "YENS", "YETI", "YETIS",
+                "ENTRY", "NINNY", "NITTY", "RETRY", "SISSY", "TEENY", "TERRY", "TESTY", "TINNY", "TRYST",
+                "ENTITY", "NINETY", "SENTRY", "TEENSY", "TRYSTS", "TRINITY", "ENTIRETY", "ETERNITY", "INTENSITY",
+                "SERENITY"]
+      },
+      piece: "L" },
     { name: "Santa Cruz",         icon: "beach", choiceLayout: "tiles",
       // About 50 miles around downtown Santa Cruz.
       zone: { lat: 36.97412, lng: -122.03080, radius: 80467,
@@ -216,13 +254,94 @@ const HUNT = {
       choices: [
         { name: "Mystery Spot",           icon: "mystery-spot", lat: 37.01723, lng: -122.00293, radius: 150,
           about: "A patch of redwood forest in the hills above Santa Cruz where balls seem to roll uphill and people seem to change height. Is it gravity, or is it a trick? You decide.",
-          puzzle: "MYSTERY SPOT PUZZLE", answers: ["mysteryanswer"], prize: "MYSTERY SPOT PRIZE" },
+          quote: { text: "“Curiouser and curiouser!”", by: "Lewis Carroll, Alice’s Adventures in Wonderland" },
+          intro: {
+            sections: [
+              { text: "✏️ YOUR MESSAGE GOES HERE: why you chose this place." },
+              { heading: "Your mystery mission",
+                text: "Take the tour and keep your eyes open.\n\n1. Stand on the level board and watch yourself “grow” and “shrink.”\n2. Try to stand up straight inside the tilted cabin.\n3. Decide for yourself: real mystery, or clever trick? Remember your verdict. I want to hear it!" },
+              { heading: "Your turn",
+                text: "When you’ve made it out of the cabin, tap the button below." }
+            ],
+            button: "I survived the cabin!"
+          },
+          photo: {
+            heading: "Picture time!",
+            text: "Take a picture of yourself leaning at an impossible angle to open your puzzle."
+          },
+          puzzle: "At the Mystery Spot, nothing stays the same. Climb each ladder by changing one letter at a time. Each step has a clue.",
+          game: {
+            type: "ladder",
+            ladders: [
+              { title: "People seem to change height…", start: "TALL", end: "TINY",
+                rungs: [ { word: "TILL", clue: "Cash drawer in a shop" },
+                         { word: "TILT", clue: "What the whole cabin seems to do" },
+                         { word: "TINT", clue: "A light shade of color" } ] },
+              { title: "…and balls seem to roll uphill", start: "SINK", end: "RISE",
+                rungs: [ { word: "RINK", clue: "Where you ice skate" },
+                         { word: "RISK", clue: "Something worth taking for love" } ] }
+            ]
+          } },
         { name: "Hidden Peak Teahouse",   icon: "teapot",       lat: 36.97603, lng: -122.02721, radius: 60,
           about: "A cozy teahouse in Santa Cruz, the perfect place to slow down over a pot of tea.",
-          puzzle: "TEAHOUSE PUZZLE", answers: ["teaanswer"], prize: "TEAHOUSE PRIZE" },
+          quote: { text: "“Tea is a work of art and needs a master hand to bring out its noblest qualities.”",
+                   by: "Okakura Kakuzō, The Book of Tea" },
+          intro: {
+            sections: [
+              { text: "✏️ YOUR MESSAGE GOES HERE: why you chose this place." },
+              { heading: "Your tea mission",
+                text: "1. Choose a tea you’ve never tried before.\n2. While it steeps, write down three things you’re grateful for today.\n3. Take the first sip slowly, and pick one word for how it tastes. Save it to tell me later." },
+              { heading: "Your turn",
+                text: "Enjoy your tea. When your cup is half empty (or half full!), tap the button below." }
+            ],
+            button: "My tea is ready!"
+          },
+          photo: {
+            heading: "Picture time!",
+            text: "Take a picture of your tea to open your puzzle."
+          },
+          puzzle: "Guess the hidden five-letter word in six tries. After each guess, green means the right letter in the right spot, yellow means the right letter in the wrong spot, and grey means the letter isn’t in the word.",
+          game: { type: "wordle", answer: "HONEY" } },
         { name: "Hole in the Wall Beach", icon: "arch",         lat: 36.99100, lng: -122.16890, radius: 300,
           about: "A hidden beach on the coast north of Santa Cruz, named for the tunnel worn through its cliffs. Check the tide before you go!",
-          puzzle: "BEACH PUZZLE", answers: ["beachanswer"], prize: "BEACH PRIZE" }
+          quote: { text: "For whatever we lose (like a you or a me)\nit’s always ourselves we find in the sea",
+                   by: "E. E. Cummings, maggie and milly and molly and may" },
+          intro: {
+            sections: [
+              { text: "✏️ YOUR MESSAGE GOES HERE: why you chose this place." },
+              { heading: "Your beach mission",
+                text: "1. Walk through the hole in the wall (only if the tide is low!).\n2. Find the prettiest shell or stone you can. Keep it if the beach allows it, or leave it for the next person.\n3. Write our initials in the sand and watch the waves take them." },
+              { heading: "Your turn",
+                text: "Stay as long as you like. When you’re ready, tap the button below." }
+            ],
+            button: "I wrote in the sand!"
+          },
+          photo: {
+            heading: "Picture time!",
+            text: "Take a picture of our initials in the sand to open your puzzle."
+          },
+          puzzle: "Find the tide pool treasures hidden in the letters. Drag through letters that touch (sideways, up, down or diagonally), or tap them one at a time and tap the last letter again to check. One special word stretches all the way across the board. Every letter gets used!",
+          game: {
+            type: "strands",
+            theme: "Low tide",
+            hints: 3,
+            rows: ["HTRASL",
+                   "SIDALO",
+                   "SIENDN",
+                   "STFPDA",
+                   "ERAOCA",
+                   "GAOIEN",
+                   "ULELEN",
+                   "LLSPMO"],
+            words: [
+              { word: "TIDEPOOLS",     path: [1,7,8,14,21,27,32,37,44], spangram: true },
+              { word: "STARFISH",      path: [12,19,26,25,20,13,6,0] },
+              { word: "SANDDOLLAR",    path: [4,9,15,22,16,11,5,10,3,2] },
+              { word: "PELICAN",       path: [45,38,39,33,28,23,17] },
+              { word: "SEAGULL",       path: [18,24,31,30,36,42,43] },
+              { word: "ANEMONE",       path: [29,35,40,46,47,41,34] }
+            ]
+          } }
       ],
       piece: "A" },
     { soon: true, name: "Bouldering Project", icon: "climb",    lat: 40.75496, lng: -111.90308, radius: 75,  puzzle: "PUZZLE 1",  answers: ["answer1"],  prize: "PRIZE 1",  piece: "E" },
@@ -455,6 +574,64 @@ label.ghost{display:block; text-align:center; color:var(--muted); border:2px das
 .pieceHeart svg{width:100%; height:100%}
 .pieceHeart span{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding-bottom:12px;
   font-family:"Fredoka", sans-serif; font-weight:700; font-size:1.9rem; color:#fff}
+
+/* Spelling Bee */
+.sb{margin-top:1rem; text-align:center}
+.sbProg{display:flex; justify-content:center; gap:.5rem; flex-wrap:wrap; color:var(--muted); font-weight:800; font-size:.9rem; margin-bottom:.4rem}
+.sbProg span{background:var(--bg); border:2px solid var(--line); border-radius:999px; padding:.15rem .7rem}
+.sbProg span.ok{color:var(--ok); border-color:var(--ok)}
+.sbEntry{min-height:2.4rem; font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; font-size:1.7rem; letter-spacing:.06em; color:var(--ink); margin:.2rem 0}
+.sbEntry .c{color:var(--heart)}
+.sbEntry .cursor{display:inline-block; width:2px; height:1.5rem; background:var(--heart); vertical-align:-.15rem; margin-left:2px; animation:blink 1s step-end infinite}
+@keyframes blink{50%{opacity:0}}
+.sbHive{position:relative; width:min(270px, 78vw); aspect-ratio:1/1; margin:.2rem auto .4rem}
+.sbHex{position:absolute; width:33.3%; aspect-ratio:1/0.866; border:0; padding:0; cursor:pointer; touch-action:manipulation;
+  clip-path:polygon(25% 0, 75% 0, 100% 50%, 75% 100%, 25% 100%, 0 50%); background:var(--line); color:var(--ink);
+  font:inherit; font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; font-size:clamp(1.3rem, 6.5vw, 1.7rem); -webkit-tap-highlight-color:transparent}
+.sbHex.mid{background:var(--butter); color:var(--tile-ink)}
+.sbHex:active{filter:brightness(.92)}
+.sbBtns{display:flex; gap:.5rem; justify-content:center}
+.sbBtns .cxBtn{flex:1; max-width:7.5rem}
+.sbFound{margin-top:1rem; text-align:left; background:var(--bg); border:2px solid var(--line); border-radius:16px; padding:.7rem .9rem}
+.sbFound h3{font-family:"Fredoka", ui-rounded, sans-serif; font-size:.85rem; letter-spacing:.07em; text-transform:uppercase; color:var(--heart); margin:0 0 .3rem}
+.sbFound ul{list-style:none; margin:0; padding:0; columns:2; column-gap:1rem; font-weight:700}
+.sbFound li.pg{color:var(--heart)}
+.sbFound p{margin:0; color:var(--muted); font-weight:700; font-size:.9rem}
+
+/* Wordle */
+.wd{margin-top:1rem; text-align:center}
+.wdGrid{display:grid; gap:5px; max-width:300px; margin:0 auto}
+.wdRow{display:grid; grid-template-columns:repeat(var(--n), 1fr); gap:5px}
+.wdCell{aspect-ratio:1; display:flex; align-items:center; justify-content:center; border:2.5px solid var(--line); border-radius:8px;
+  font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; font-size:clamp(1.3rem, 7vw, 1.8rem); color:var(--ink); background:var(--card)}
+.wdCell.full{border-color:var(--muted)}
+.wdCell.g, .wdKey.g{background:#4DBF8E; border-color:#4DBF8E; color:#fff}
+.wdCell.y, .wdKey.y{background:#F2B33D; border-color:#F2B33D; color:#fff}
+.wdCell.x, .wdKey.x{background:#9A8A9E; border-color:#9A8A9E; color:#fff}
+.wdCell.flip{animation:flip .45s ease both}
+@keyframes flip{0%{transform:rotateX(0)} 50%{transform:rotateX(90deg)} 100%{transform:rotateX(0)}}
+.wdKeys{display:grid; gap:6px; margin-top:1rem; touch-action:manipulation}
+.wdKeys div{display:flex; gap:4px; justify-content:center}
+.wdKey{font:inherit; font-weight:800; font-size:.95rem; flex:1; max-width:2.4rem; min-height:3.1rem; padding:0; border:0; border-radius:8px; cursor:pointer;
+  background:var(--line); color:var(--ink); -webkit-tap-highlight-color:transparent}
+.wdKey.wide{max-width:3.8rem; flex:1.6; font-size:.75rem}
+
+/* Word ladder */
+.ld{margin-top:1rem}
+.ldOne + .ldOne{margin-top:1.4rem; padding-top:1.2rem; border-top:2px dashed var(--line)}
+.ldTitle{font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; text-align:center; color:var(--muted); margin:0 0 .5rem}
+.ldRung{display:flex; flex-direction:column; align-items:center; gap:.25rem; margin:.35rem 0}
+.ldWord{display:flex; gap:5px; justify-content:center}
+.ldWord span{width:2.6rem; height:2.6rem; display:flex; align-items:center; justify-content:center; border-radius:10px;
+  font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; font-size:1.4rem; background:var(--bg); border:2.5px solid var(--line); color:var(--ink)}
+.ldWord.end span{background:var(--butter); border-color:var(--butter); color:var(--tile-ink)}
+.ldWord.done span{background:var(--mint); border-color:var(--mint); color:var(--tile-ink)}
+.ldWord span.chg{background:var(--pink); border-color:var(--pink)}
+.ldClue{margin:0; font-weight:700; font-size:.95rem; color:var(--muted); text-align:center; max-width:22rem}
+.ldRung.on .ldClue{color:var(--ink)}
+.ldRung input[type=text]{width:12rem; margin-top:.2rem; text-align:center; letter-spacing:.3em; text-transform:uppercase; font-family:"Fredoka", ui-rounded, sans-serif; font-size:1.3rem}
+.ldRung .cxBtn{margin-top:.4rem; min-width:8rem}
+.ldRung.locked{opacity:.45}
 
 /* Heart burst */
 .burst{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:20}
@@ -1099,7 +1276,7 @@ function renderPlace(app, i){
   const card = el("section", {class:"card" + (flash === "arrive" ? " reveal" : "")});
   card.append(el("h2", {}, "Your puzzle"));
   card.append(el("p", {class:"text"}, e.puzzle));
-  const GAMES = {connections, strands, crossword};
+  const GAMES = {connections, strands, crossword, spellingbee, wordle, ladder};
   if (!solved && e.game && GAMES[e.game.type]){
     GAMES[e.game.type](card, e.game, () => solve(i, c));
     if (TEST){
@@ -1580,6 +1757,243 @@ function connections(root, game, onWin){
     }
   });
   reset();
+}
+
+/* Typing on a computer keyboard: only while this game is on screen */
+function onKeys(root, fn){
+  const h = ev => {
+    if (!root.isConnected){ removeEventListener("keydown", h); return; }
+    if (ev.metaKey || ev.ctrlKey || ev.altKey || (ev.target && /^(INPUT|TEXTAREA)$/.test(ev.target.tagName))) return;
+    fn(ev);
+  };
+  addEventListener("keydown", h);
+}
+function flashMsg(msg, t, cls){
+  clearTimeout(msg._t); msg.textContent = t; msg.className = "status" + (cls ? " " + cls : "");
+  if (t && cls !== "ok") msg._t = setTimeout(() => { msg.textContent = ""; }, 2200);
+}
+
+/* Spelling Bee game */
+function spellingbee(root, game, onWin){
+  const mid = game.center.toUpperCase();
+  let outer = [...game.letters.toUpperCase()];
+  const all = new Set([mid, ...outer]);
+  const words = game.words.map(w => w.toUpperCase());
+  const isPangram = w => [...all].every(ch => w.includes(ch));
+  const pangrams = words.filter(isPangram);
+  const goal = Math.min(game.goal || words.length, words.length);
+  const found = [];
+  let entry = "", over = false;
+
+  const wrap = el("div", {class:"sb"});
+  const prog = el("div", {class:"sbProg"});
+  const entryBox = el("div", {class:"sbEntry", "aria-live":"polite"});
+  const hive = el("div", {class:"sbHive", role:"group", "aria-label":"Letters"});
+  const btns = el("div", {class:"sbBtns"});
+  const bDel = el("button", {type:"button", class:"cxBtn"}, "Delete");
+  const bShuf = el("button", {type:"button", class:"cxBtn", "aria-label":"Shuffle letters"}, "⟳");
+  const bGo = el("button", {type:"button", class:"cxBtn"}, "Enter");
+  btns.append(bDel, bShuf, bGo);
+  const msg = el("p", {class:"status", role:"status"});
+  const list = el("div", {class:"sbFound"});
+  wrap.append(prog, entryBox, hive, btns, msg, list);
+  root.append(wrap);
+
+  // Centre hex plus six around it (positions as % of the hive box)
+  const SPOTS = [[33.3, 35.6], [33.3, 6.7], [58.3, 21.1], [58.3, 50], [33.3, 64.4], [8.3, 50], [8.3, 21.1]];
+  function drawHive(){
+    hive.textContent = "";
+    [mid, ...outer].forEach((ch, k) => {
+      const b = el("button", {type:"button", class:"sbHex" + (k ? "" : " mid")}, ch);
+      b.style.left = SPOTS[k][0] + "%"; b.style.top = SPOTS[k][1] + "%";
+      b.addEventListener("click", () => add(ch));
+      hive.append(b);
+    });
+  }
+  function drawEntry(){
+    entryBox.textContent = "";
+    [...entry].forEach(ch => entryBox.append(el("span", {class: ch === mid ? "c" : ""}, ch)));
+    entryBox.append(el("span", {class:"cursor"}));
+  }
+  function draw(){
+    prog.textContent = "";
+    prog.append(el("span", {class: found.length >= goal ? "ok" : ""}, found.length + " of " + goal + " words"));
+    const pg = pangrams.filter(w => found.includes(w)).length;
+    prog.append(el("span", {class: pg === pangrams.length ? "ok" : ""},
+      pangrams.length > 1 ? "Pangrams: " + pg + " of " + pangrams.length : (pg ? "Pangram found ✓" : "Pangram: not yet")));
+    list.textContent = "";
+    list.append(el("h3", {}, "Your words"));
+    if (!found.length) list.append(el("p", {}, "None yet. Every word needs the yellow letter!"));
+    else {
+      const ul = el("ul");
+      [...found].sort().forEach(w => ul.append(el("li", {class: isPangram(w) ? "pg" : ""}, w[0] + w.slice(1).toLowerCase())));
+      list.append(ul);
+    }
+    bDel.disabled = bShuf.disabled = bGo.disabled = over;
+    drawEntry();
+  }
+  function add(ch){ if (over || entry.length >= 19) return; entry += ch; drawEntry(); }
+  function del(){ if (over) return; entry = entry.slice(0, -1); drawEntry(); }
+  function enter(){
+    if (over || !entry) return;
+    const w = entry;
+    const bad = t => { flashMsg(msg, t, "warn"); entryBox.classList.remove("shake"); void entryBox.offsetWidth; entryBox.classList.add("shake"); setTimeout(() => { entry = ""; drawEntry(); }, 450); };
+    if (w.length < 4) return bad("Too short. Words have at least 4 letters.");
+    if (!w.includes(mid)) return bad("Missing the center letter, " + mid + ".");
+    if ([...w].some(ch => !all.has(ch))) return bad("Only the letters in the hive count.");
+    if (found.includes(w)) return bad("Already found!");
+    if (!words.includes(w)) return bad("Not in my word list. Try another!");
+    found.push(w); entry = "";
+    flashMsg(msg, isPangram(w) ? "Pangram! 🌸 Every letter!" : ["Nice!", "Lovely!", "Great!", "Yes!"][found.length % 4], "ok");
+    if (found.length >= goal && pangrams.every(p => found.includes(p))){
+      over = true; draw(); flashMsg(msg, "You did it! 💕", "ok"); setTimeout(onWin, 1100); return;
+    }
+    if (found.length >= goal) flashMsg(msg, "That’s enough words! Now find the pangram, the word that uses every letter.", "ok");
+    draw();
+  }
+  bDel.addEventListener("click", del);
+  bGo.addEventListener("click", enter);
+  bShuf.addEventListener("click", () => { for (let k = outer.length - 1; k > 0; k--){ const j = Math.floor(Math.random() * (k + 1)); [outer[k], outer[j]] = [outer[j], outer[k]]; } drawHive(); });
+  onKeys(wrap, ev => {
+    if (ev.key === "Enter"){ ev.preventDefault(); enter(); }
+    else if (ev.key === "Backspace"){ ev.preventDefault(); del(); }
+    else if (/^[a-z]$/i.test(ev.key) && all.has(ev.key.toUpperCase())) add(ev.key.toUpperCase());
+  });
+  drawHive(); draw();
+}
+
+/* Wordle game */
+function wordle(root, game, onWin){
+  const ans = game.answer.toUpperCase(), N = ans.length, TRIES = game.tries || 6;
+  let rows, cur, over, keyState;
+  const wrap = el("div", {class:"wd"});
+  const grid = el("div", {class:"wdGrid", role:"grid", "aria-label":"Guesses"});
+  const msg = el("p", {class:"status", role:"status"});
+  const keys = el("div", {class:"wdKeys"});
+  wrap.append(grid, msg, keys);
+  root.append(wrap);
+  const keyBtns = {};
+  ["QWERTYUIOP", "ASDFGHJKL", "+ZXCVBNM-"].forEach(line => {
+    const row = el("div");
+    [...line].forEach(k => {
+      const label = k === "+" ? "Enter" : k === "-" ? "⌫" : k;
+      const b = el("button", {type:"button", class:"wdKey" + (k === "+" || k === "-" ? " wide" : ""), "aria-label": k === "-" ? "Delete" : label}, label);
+      b.addEventListener("click", () => k === "+" ? enter() : k === "-" ? del() : add(k));
+      if (k !== "+" && k !== "-") keyBtns[k] = b;
+      row.append(b);
+    });
+    keys.append(row);
+  });
+
+  function score(g){   // g = green, y = yellow, x = grey (handles double letters)
+    const res = Array(N).fill("x"), left = {};
+    for (let k = 0; k < N; k++){ if (g[k] === ans[k]) res[k] = "g"; else left[ans[k]] = (left[ans[k]] || 0) + 1; }
+    for (let k = 0; k < N; k++) if (res[k] !== "g" && left[g[k]]){ res[k] = "y"; left[g[k]]--; }
+    return res;
+  }
+  function draw(flipRow){
+    grid.textContent = "";
+    for (let r = 0; r < TRIES; r++){
+      const row = el("div", {class:"wdRow", role:"row"}); row.style.setProperty("--n", N);
+      const done = rows[r] && rows[r].res, word = r === rows.length ? cur : rows[r] ? rows[r].word : "";
+      for (let k = 0; k < N; k++){
+        const ch = word[k] || "";
+        const d = el("div", {class:"wdCell" + (done ? " " + rows[r].res[k] : ch ? " full" : "") + (done && r === flipRow ? " flip" : ""), role:"gridcell"}, ch);
+        if (done && r === flipRow) d.style.animationDelay = (k * .12) + "s";
+        row.append(d);
+      }
+      grid.append(row);
+    }
+    Object.entries(keyBtns).forEach(([k, b]) => { b.className = "wdKey" + (keyState[k] ? " " + keyState[k] : ""); b.disabled = over; });
+  }
+  function add(ch){ if (over || cur.length >= N) return; cur += ch; draw(); }
+  function del(){ if (over) return; cur = cur.slice(0, -1); draw(); }
+  function enter(){
+    if (over) return;
+    if (cur.length < N){ flashMsg(msg, "Not enough letters", "warn"); grid.children[rows.length].classList.add("shake"); setTimeout(() => grid.children[rows.length] && grid.children[rows.length].classList.remove("shake"), 400); return; }
+    const res = score(cur), rank = {x:1, y:2, g:3};
+    [...cur].forEach((ch, k) => { if (!keyState[ch] || rank[res[k]] > rank[keyState[ch]]) keyState[ch] = res[k]; });
+    rows.push({word:cur, res}); const won = cur === ans; cur = "";
+    draw(rows.length - 1);
+    if (won){
+      over = true; draw(rows.length - 1);
+      setTimeout(() => flashMsg(msg, ["Genius!", "Magnificent!", "Impressive!", "Splendid!", "Great!", "Phew!"][rows.length - 1] + " 💕", "ok"), N * 120 + 300);
+      setTimeout(onWin, N * 120 + 1400);
+    } else if (rows.length === TRIES){
+      over = true; draw(rows.length - 1);
+      setTimeout(() => {
+        flashMsg(msg, "Out of tries! Have a sip of tea and try again.", "warn");
+        const again = el("button", {type:"button", class:"primary"}, "Start over");
+        again.addEventListener("click", () => { again.remove(); reset(); });
+        wrap.append(again);
+      }, N * 120 + 300);
+    }
+  }
+  function reset(){ rows = []; cur = ""; over = false; keyState = {}; msg.textContent = ""; draw(); }
+  onKeys(wrap, ev => {
+    if (ev.key === "Enter"){ ev.preventDefault(); enter(); }
+    else if (ev.key === "Backspace"){ ev.preventDefault(); del(); }
+    else if (/^[a-z]$/i.test(ev.key)) add(ev.key.toUpperCase());
+  });
+  reset();
+}
+
+/* Word ladder game: change one letter at a time, with a clue for each step */
+function ladder(root, game, onWin){
+  const L = game.ladders.map(l => ({start:l.start.toUpperCase(), end:l.end.toUpperCase(), title:l.title,
+    rungs:l.rungs.map(r => ({word:r.word.toUpperCase(), clue:r.clue}))}));
+  const at = L.map(() => 0);   // how many rungs solved in each ladder
+  const wrap = el("div", {class:"ld"});
+  root.append(wrap);
+  const tiles = (word, cls, prev) => {
+    const w = el("div", {class:"ldWord" + (cls ? " " + cls : ""), "aria-label": word});
+    [...word].forEach((ch, k) => w.append(el("span", {class: prev && prev[k] !== ch ? "chg" : ""}, ch)));
+    return w;
+  };
+  const diff = (a, b) => [...a].filter((ch, k) => ch !== b[k]).length;
+  let focusNext = false;
+  function draw(){
+    wrap.textContent = "";
+    L.forEach((l, n) => {
+      const box = el("div", {class:"ldOne"});
+      if (l.title) box.append(el("p", {class:"ldTitle"}, l.title));
+      box.append(tiles(l.start, "end"));
+      const unlocked = n === 0 || at[n - 1] === L[n - 1].rungs.length;
+      l.rungs.forEach((r, k) => {
+        const prevWord = k ? l.rungs[k - 1].word : l.start;
+        const rung = el("div", {class:"ldRung"});
+        if (k < at[n]){ rung.append(tiles(r.word, "done", prevWord), el("p", {class:"ldClue"}, r.clue)); }
+        else if (k === at[n] && unlocked){
+          rung.classList.add("on");
+          rung.append(el("p", {class:"ldClue"}, r.clue));
+          const inp = el("input", {type:"text", maxlength:String(r.word.length), autocomplete:"off", autocorrect:"off", autocapitalize:"characters", spellcheck:"false",
+            "aria-label":"Word for: " + r.clue, placeholder:"?".repeat(r.word.length), enterkeyhint:"go"});
+          const b = el("button", {type:"button", class:"cxBtn"}, "Check");
+          const msg = el("p", {class:"status", role:"status"});
+          const go = () => {
+            const g = inp.value.replace(/[^a-z]/gi, "").toUpperCase();
+            if (g.length !== r.word.length) return flashMsg(msg, "It’s a " + r.word.length + "-letter word.", "warn");
+            if (diff(g, prevWord) !== 1) return flashMsg(msg, "Change exactly one letter of " + prevWord + ".", "warn");
+            if (g !== r.word){ inp.classList.remove("shake"); void inp.offsetWidth; inp.classList.add("shake"); return flashMsg(msg, "Good try, but that’s not the one. Check the clue!", "warn"); }
+            at[n]++; focusNext = true;
+            if (at.every((v, j) => v === L[j].rungs.length)){ draw(); burst(10); setTimeout(onWin, 1200); }
+            else draw();
+          };
+          b.addEventListener("click", go);
+          inp.addEventListener("keydown", ev => { if (ev.key === "Enter") go(); });
+          rung.append(inp, b, msg);
+          if (focusNext){ focusNext = false; setTimeout(() => inp.focus({preventScroll:true}), 50); }
+        } else {
+          rung.classList.add("locked");
+          rung.append(tiles("?".repeat(r.word.length)), el("p", {class:"ldClue"}, unlocked ? r.clue : "…"));
+        }
+        box.append(rung);
+      });
+      box.append(tiles(l.end, "end", at[n] === l.rungs.length ? l.rungs[l.rungs.length - 1].word : null));
+      wrap.append(box);
+    });
+  }
+  draw();
 }
 
 function render(){
