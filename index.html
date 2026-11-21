@@ -16,7 +16,7 @@
      name     - shown on the tile (keep it short)
      icon     - climb, mountain, art, bag, book, giraffe, trees, coffee,
                 duck, guitar, koi, beach, lighthouse, bridge, candy, market, mystery-spot,
-                teapot, arch, gift, star
+                teapot, arch, gift, star, whale
      lat/lng  - location; radius = how close (metres) to unlock
      puzzle   - shown once they arrive (line breaks are kept)
      answers  - accepted answers; case, spaces and punctuation are ignored
@@ -305,26 +305,27 @@ const HUNT = {
                          { word: "RISK", clue: "Something worth taking for love" } ] }
             ]
           } },
-        { name: "Hidden Peak Teahouse",   icon: "teapot",       lat: 36.97603, lng: -122.02721, radius: 60,
-          about: "A cozy teahouse in Santa Cruz, the perfect place to slow down over a pot of tea.",
-          quote: { text: "“Tea is a work of art and needs a master hand to bring out its noblest qualities.”",
-                   by: "Okakura Kakuzō, The Book of Tea" },
+        { name: "Seymour Center",         icon: "whale",        lat: 36.94935, lng: -122.06485, radius: 150,
+          about: "UC Santa Cruz’s ocean discovery center, out on the cliffs at the edge of town. Out front is Ms. Blue, an 87-foot blue whale skeleton, one of the largest on display anywhere. Inside are touch pools and real marine science. It’s usually open Tuesday to Sunday, 10 to 4, so check the hours before you go.",
+          link: { label: "Seymour Center hours and tickets", url: "https://seymourcenter.ucsc.edu/visit" },
+          quote: { text: "“There is, one knows not what sweet mystery about this sea, whose gently awful stirrings seem to speak of some hidden soul beneath.”",
+                   by: "Herman Melville, Moby-Dick" },
           intro: {
             sections: [
               { text: "✏️ YOUR MESSAGE GOES HERE: why you chose this place." },
-              { heading: "Your tea mission",
-                text: "1. Choose a tea you’ve never tried before.\n2. While it steeps, write down three things you’re grateful for today.\n3. Take the first sip slowly, and pick one word for how it tastes. Save it to tell me later." },
+              { heading: "Your ocean mission",
+                text: "1. Before you walk up to Ms. Blue, everyone guesses how many steps it takes to walk her from nose to tail. Closest guess wins bragging rights.\n2. Walk her whole length and count. She’s about as long as two school buses.\n3. Inside, find the touch pools and gently touch a sea star or an anemone.\n4. Pick your favorite creature of the day, and save the reason to tell me later." },
               { heading: "Your turn",
-                text: "Enjoy your tea. When your cup is half empty (or half full!), tap the button below." }
+                text: "When you’ve met Ms. Blue and made a new ocean friend, tap the button below." }
             ],
-            button: "My tea is ready!"
+            button: "We met Ms. Blue!"
           },
           photo: {
             heading: "Picture time!",
-            text: "Take a picture of your tea to open your puzzle."
+            text: "Take a picture with Ms. Blue to open your puzzle."
           },
           puzzle: "Guess the hidden five-letter word in six tries. After each guess, green means the right letter in the right spot, yellow means the right letter in the wrong spot, and grey means the letter isn’t in the word.",
-          game: { type: "wordle", answer: "HONEY" } },
+          game: { type: "wordle", answer: "OCEAN" } },
         { name: "Hole in the Wall Beach", icon: "arch",         lat: 36.99100, lng: -122.16890, radius: 300,
           about: "A hidden beach on the coast north of Santa Cruz, named for the tunnel worn through its cliffs. Check the tide before you go!",
           quote: { text: "For whatever we lose (like a you or a me)\nit’s always ourselves we find in the sea",
@@ -822,6 +823,11 @@ const ICONS = {
     <path d="M2 50 C10 46 16 54 24 50 C32 46 38 54 46 50 C52 47 58 50 62 50 V60 H2 Z" fill="#9DD2FF" ${S}/>
     <path d="M6 55 C12 53 16 57 22 55 M34 56 C40 54 44 58 50 56" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
     ${eyes(16,48,24)}<path d="M28 20 q4 3 8 0" fill="none" ${S} stroke-width="2"/></svg>`,
+  whale: `<svg viewBox="0 0 64 64"><path d="M2 54 C12 50 20 58 32 54 C44 50 52 58 62 54 V60 H2 Z" fill="#9DD2FF" ${S}/>
+    <path d="M6 34 C6 22 20 18 32 20 C42 22 48 28 50 34 L58 26 L56 36 L60 44 L50 40 C46 48 36 50 26 50 C14 50 6 44 6 34 Z" fill="#9DD2FF" ${S}/>
+    <path d="M10 40 C16 46 30 47 40 44" fill="none" ${S} stroke-width="2"/>
+    ${eyes(16,26,32)}${cheeks(12,30,37)}${smile(21,37,3)}
+    <path d="M22 18 C22 12 20 8 16 6 M22 18 C22 12 24 8 28 6" fill="none" ${S} stroke="#9DD2FF" stroke-width="2.4"/></svg>`,
   gift: `<svg viewBox="0 0 64 64"><rect x="10" y="26" width="44" height="30" rx="5" fill="#C4B0FF" ${S}/>
     <rect x="7" y="18" width="50" height="10" rx="4" fill="#FF8FB8" ${S}/><path d="M32 18 V56" ${S}/>
     <path d="M32 18 C24 6 14 12 20 18 M32 18 C40 6 50 12 44 18" fill="none" ${S}/></svg>`,
