@@ -270,107 +270,84 @@ const HUNT = {
       } }
       ],
       piece: "L" },
-    { name: "Santa Cruz",         icon: "beach", choiceLayout: "tiles",
-      // About 20 miles around downtown Santa Cruz, so it doesn’t open from Belmont.
-      zone: { lat: 36.97412, lng: -122.03080, radius: 32187,
-              about: "For this adventure, you’ll be traveling to Santa Cruz, California. Once you’re in the area, tap the button below to see your options." },
+    { name: "Pinecrest",          icon: "mountain", choiceLayout: "tiles",
+      // About 20 miles around Pinecrest, up Highway 108 near Dodge Ridge.
+      zone: { lat: 38.19100, lng: -119.99600, radius: 32187,
+              about: "For this adventure, you’ll be traveling to Pinecrest, California, high in the Sierra Nevada near Dodge Ridge. Once you’re in the area, tap the button below to see your options." },
       greeting: "Choose your adventure! You will probably only make it to one, but you won’t miss out on any playlists or rewards. You can switch anytime.",
       choices: [
-        { name: "Mystery Spot",           icon: "mystery-spot", lat: 37.01723, lng: -122.00293, radius: 150,
-          about: "A patch of redwood forest in the hills above Santa Cruz that is almost as mysterious and intriguing as my best girl. Go for some silly fun.",
-          quote: { text: "“Curiouser and curiouser!”", by: "Lewis Carroll, Alice’s Adventures in Wonderland" },
+        // ✏️ CABIN LOCATION: placeholder near Pinecrest village. Swap in the cabin's
+        // exact lat/lng and shrink the radius to about 60.
+        { name: "The Cabin",              icon: "cabin",        lat: 38.19100, lng: -119.99600, radius: 3000,
+          about: "Our cabin in the pines, the coziest place to settle in after a day in the mountains.",
+          quote: { text: "“I went to the woods because I wished to live deliberately, to front only the essential facts of life, and see if I could not learn what it had to teach.”",
+                   by: "Henry David Thoreau, Walden" },
           intro: {
             sections: [
-              { text: "Life with you is a grand adventure. When I heard of this spot, I thought it was exactly the kind of thing that you and I would drive a few extra miles to see. Remember how much fun we had at the Museum of Illusions? Remember how you sat upside down on that stool hanging from the ceiling? You bring me such joy. I want to see you smile in this place." },
-              { heading: "Your love-struck mission",
-                text: "1. On the level board, watch yourself “grow” and “shrink.” Whether you’re feeling tall or tiny today, you’re always exactly the right size to fit in my arms.\n2. Inside the tilted cabin, the whole world leans sideways. Find the one spot where you can stand up straight, and think of who keeps you steady when life tips over. (I hope it’s me. You do that for me.)\n3. Find your most impossible lean, the silliest lean you’ve leaned. Laugh as loud as you want.\n4. Before you leave, answer two questions and save them for me: is the Mystery Spot real magic or a clever trick? And what’s the most mysterious thing about us?" },
+              { text: "✏️ YOUR MESSAGE GOES HERE: why you chose this place." },
+              { heading: "Your cabin mission",
+                text: "1. Light the fire (or a few candles) and get cozy.\n2. Make yourself a mug of cocoa or tea.\n3. Write me a short letter by hand. Seal it up and save it for us to open together." },
               { heading: "Your turn",
-                text: "When you’re back on solid ground (and still a little dizzy), tap the button below." }
+                text: "When your letter is sealed and your mug is warm, tap the button below." }
             ],
             playlist: "https://open.spotify.com/playlist/5126cJ0qFPalGtn1WR2pUN?si=03c0bc632fb245db",
             playlistText: "A feel-good playlist for feel-good places.",
-            button: "I’m head over heels!"
+            button: "My letter is sealed!"
           },
           photo: {
             heading: "Picture time!",
-            text: "Take a picture of yourself leaning at an impossible angle to open your puzzle."
+            text: "Take a picture of your mug by the fire to open your puzzle."
           },
-          puzzle: "At the Mystery Spot, nothing stays the same. Tall things turn tiny, and what should sink seems to rise. Love works a little like that too. When we’re together, our worries shrink from tall to tiny, and on the days we feel like we’re sinking, we help each other rise.\n\nClimb each ladder, from TALL to TINY and from SINK to RISE, by changing one letter at a time. Each step has a clue.",
+          puzzle: "Find four groups of four related words.",
           game: {
-            type: "ladder",
-            ladders: [
-              { title: "People seem to change height…", start: "TALL", end: "TINY",
-                rungs: [ { word: "TILL", clue: "Cash drawer in a shop" },
-                         { word: "TILT", clue: "What the whole cabin seems to do" },
-                         { word: "TINT", clue: "A light shade of color" } ] },
-              { title: "…and balls seem to roll uphill", start: "SINK", end: "RISE",
-                rungs: [ { word: "RINK", clue: "Where you ice skate" },
-                         { word: "RISK", clue: "Something worth taking for love" } ] }
+            type: "connections",
+            groups: [
+              { theme: "Warm drinks",      words: ["COCOA", "CIDER", "TEA", "TODDY"],            color: "yellow" },
+              { theme: "Cozy fabrics",     words: ["FLANNEL", "FLEECE", "WOOL", "CORDUROY"],     color: "green" },
+              { theme: "By the fireplace", words: ["LOG", "EMBER", "KINDLING", "POKER"],         color: "blue" },
+              { theme: "___FIRE",          words: ["CAMP", "BON", "CROSS", "SURE"],              color: "purple" }
             ]
           } },
-        { name: "Seymour Center",         icon: "whale",        lat: 36.94935, lng: -122.06485, radius: 150,
-          about: "UC Santa Cruz’s ocean discovery center, out on the cliffs at the edge of town. Out front is Ms. Blue, an 87-foot blue whale skeleton, one of the largest on display anywhere. Inside are touch pools and real marine science. It’s usually open Tuesday to Sunday, 10 to 4, so check the hours before you go.",
-          link: { label: "Seymour Center hours and tickets", url: "https://seymourcenter.ucsc.edu/visit" },
-          quote: { text: "“There is, one knows not what sweet mystery about this sea, whose gently awful stirrings seem to speak of some hidden soul beneath.”",
-                   by: "Herman Melville, Moby-Dick" },
+        { name: "Pinecrest Lake",         icon: "lake",         lat: 38.19600, lng: -119.99300, radius: 1000,
+          about: "A mountain lake ringed by pines and granite, with a trail that loops all the way around it (about 4 miles).",
+          quote: { text: "“A lake is the landscape’s most beautiful and expressive feature. It is earth’s eye; looking into which the beholder measures the depth of his own nature.”",
+                   by: "Henry David Thoreau, Walden" },
           intro: {
             sections: [
-              { text: "This one is just for some added fun to your California trip. See some fishies and a big blue whale. If you were a fish, you’d be a clown fish, because you make me laugh. Learn some cool things for me." },
-              { heading: "Your ocean mission",
-                text: "1. Before you walk up to Ms. Blue, everyone guesses how many steps it takes to walk her from nose to tail. Closest guess wins bragging rights.\n2. Walk her whole length and count. She’s about as long as two school buses.\n3. Inside, find the touch pools and gently touch a sea star or an anemone.\n4. Pick your favorite creature of the day, and save the reason to tell me later." },
+              { text: "✏️ YOUR MESSAGE GOES HERE: why you chose this place." },
+              { heading: "Your lake mission",
+                text: "1. Walk part of the trail around the lake. Go as far as you like.\n2. Find the best pinecone you can.\n3. Sit on the shore for five quiet minutes and notice three sounds. Remember them to tell me later." },
               { heading: "Your turn",
-                text: "When you’ve met Ms. Blue and made a new ocean friend, tap the button below." }
+                text: "When you’ve heard your three sounds, tap the button below." }
             ],
             playlist: "https://open.spotify.com/playlist/5126cJ0qFPalGtn1WR2pUN?si=03c0bc632fb245db",
             playlistText: "A feel-good playlist for feel-good places.",
-            button: "We met Ms. Blue!"
+            button: "I heard three sounds!"
           },
           photo: {
             heading: "Picture time!",
-            text: "Take a picture with Ms. Blue to open your puzzle."
+            text: "Take a picture of your pinecone with the lake behind it to open your puzzle."
           },
-          puzzle: "Guess the hidden five-letter word in six tries. After each guess, green means the right letter in the right spot, yellow means the right letter in the wrong spot, and grey means the letter isn’t in the word.",
-          game: { type: "wordle", answer: "CLOWN" } },
-        { name: "Hole in the Wall Beach", icon: "arch",         lat: 36.99100, lng: -122.16890, radius: 300,
-          about: "A hidden beach on the coast north of Santa Cruz, named for the tunnel worn through its cliffs. Check the tide before you go!",
-          quote: { text: "For whatever we lose (like a you or a me)\nit’s always ourselves we find in the sea",
-                   by: "E. E. Cummings, maggie and milly and molly and may" },
-          intro: {
-            sections: [
-              { text: "A little hole in the wall—a little place that becomes more special when we visit. Neither of us like the water, but we can smell the air, and listen to the endless ocean. Every ‘I love you’ we send is a wave from a vast sea of feeling we hold in our hearts. How can we possibly express it? Stretch your arms wide. If you are here with someone, give them a big squeeze." },
-              { heading: "Your beach mission",
-                text: "1. Walk through the hole in the wall (only if the tide is low!).\n2. Find the prettiest shell or stone you can. Keep it if the beach allows it, or leave it for the next person.\n3. Write our initials in the sand and watch the waves take them." },
-              { heading: "Your turn",
-                text: "Stay as long as you like. When you’re ready, tap the button below." }
-            ],
-            playlist: "https://open.spotify.com/playlist/5126cJ0qFPalGtn1WR2pUN?si=03c0bc632fb245db",
-            playlistText: "A feel-good playlist for feel-good places.",
-            button: "I wrote in the sand!"
-          },
-          photo: {
-            heading: "Picture time!",
-            text: "Take a picture of our initials in the sand to open your puzzle."
-          },
-          puzzle: "Find the tide pool treasures hidden in the letters. Drag through letters that touch (sideways, up, down or diagonally), or tap them one at a time and tap the last letter again to check. One special word stretches all the way across the board. Every letter gets used!",
+          puzzle: "Find the Sierra critters hidden in the letters. Drag through letters that touch (sideways, up, down or diagonally), or tap them one at a time and tap the last letter again to check. One special word stretches all the way across the board. Every letter gets used!",
           game: {
             type: "strands",
-            theme: "Low tide",
+            theme: "Sierra critters",
             hints: 3,
-            rows: ["HTRASL",
-                   "SIDALO",
-                   "SIENDN",
-                   "STFPDA",
-                   "ERAOCA",
-                   "GAOIEN",
-                   "ULELEN",
-                   "LLSPMO"],
+            rows: ["TTBCAY",
+                   "RUSLKE",
+                   "OTEBRP",
+                   "CHCRES",
+                   "IPEAYO",
+                   "MNTSRA",
+                   "UNIEJR",
+                   "KPLLES"],
             words: [
-              { word: "TIDEPOOLS",     path: [1,7,8,14,21,27,32,37,44], spangram: true },
-              { word: "STARFISH",      path: [12,19,26,25,20,13,6,0] },
-              { word: "SANDDOLLAR",    path: [4,9,15,22,16,11,5,10,3,2] },
-              { word: "PELICAN",       path: [45,38,39,33,28,23,17] },
-              { word: "SEAGULL",       path: [18,24,31,30,36,42,43] },
-              { word: "ANEMONE",       path: [29,35,40,46,47,41,34] }
+              { word: "PINECREST",     path: [43,38,31,26,20,21,14,8,1], spangram: true },
+              { word: "TROUT",         path: [13,6,12,7,0] },
+              { word: "BLACKBEAR",     path: [2,9,4,3,10,15,22,27,34] },
+              { word: "OSPREY",        path: [29,23,17,16,11,5] },
+              { word: "CHIPMUNK",      path: [18,19,24,25,30,36,37,42] },
+              { word: "STELLERSJAY",   path: [33,32,39,44,45,46,41,47,40,35,28] }
             ]
           } }
       ],
@@ -835,6 +812,21 @@ const ICONS = {
     <path d="M10 40 C16 46 30 47 40 44" fill="none" ${S} stroke-width="2"/>
     ${eyes(16,26,32)}${cheeks(12,30,37)}${smile(21,37,3)}
     <path d="M22 18 C22 12 20 8 16 6 M22 18 C22 12 24 8 28 6" fill="none" ${S} stroke="#9DD2FF" stroke-width="2.4"/></svg>`,
+  cabin: `<svg viewBox="0 0 64 64"><path d="M4 56 H60" ${S}/>
+    <path d="M10 8 L16 22 H4 Z M10 18 L17 32 H3 Z" fill="#8FDFC5" ${S} stroke-width="2"/><path d="M10 32 V40" ${S} stroke-width="2"/>
+    <rect x="44" y="18" width="7" height="12" fill="#FFB894" ${S} stroke-width="2"/>
+    <path d="M48 12 C46 9 49 7 48 4" fill="none" ${S} stroke-width="2" stroke="#C8AFC9"/>
+    <rect x="18" y="34" width="38" height="22" fill="#FFB894" ${S}/>
+    <path d="M18 41 H56 M18 48 H56" fill="none" ${S} stroke-width="1.8"/>
+    <path d="M14 36 L37 18 L60 36 Z" fill="#FF8FB8" ${S}/>
+    <rect x="23" y="42" width="9" height="8" rx="1.5" fill="#FFDB75" ${S} stroke-width="2"/>
+    <rect x="40" y="42" width="9" height="14" rx="2" fill="#FFF5F9" ${S} stroke-width="2"/></svg>`,
+  lake: `<svg viewBox="0 0 64 64"><path d="M4 30 L18 12 L28 24 L38 10 L60 30 Z" fill="#C4B0FF" ${S}/>
+    <ellipse cx="32" cy="46" rx="28" ry="12" fill="#9DD2FF" ${S}/>
+    <path d="M12 6 L18 18 H6 Z M12 14 L19 28 H5 Z" fill="#8FDFC5" ${S} stroke-width="2"/>
+    <path d="M52 8 L58 20 H46 Z M52 16 L59 30 H45 Z" fill="#8FDFC5" ${S} stroke-width="2"/>
+    <path d="M18 48 C22 46 26 50 30 48 M36 44 C40 42 44 46 48 44" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+    ${eyes(28,36,40)}<path d="M30 43.5 q2 1.6 4 0" fill="none" ${S} stroke-width="1.8"/></svg>`,
   gift: `<svg viewBox="0 0 64 64"><rect x="10" y="26" width="44" height="30" rx="5" fill="#C4B0FF" ${S}/>
     <rect x="7" y="18" width="50" height="10" rx="4" fill="#FF8FB8" ${S}/><path d="M32 18 V56" ${S}/>
     <path d="M32 18 C24 6 14 12 20 18 M32 18 C40 6 50 12 44 18" fill="none" ${S}/></svg>`,
