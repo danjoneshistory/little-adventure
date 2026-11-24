@@ -276,9 +276,10 @@ const HUNT = {
               about: "For this adventure, you’ll be traveling to Pinecrest, California, high in the Sierra Nevada near Dodge Ridge. Once you’re in the area, tap the button below to see your options." },
       greeting: "Choose your adventure! You will probably only make it to one, but you won’t miss out on any playlists or rewards. You can switch anytime.",
       choices: [
-        // ✏️ CABIN LOCATION: placeholder near Pinecrest village. Swap in the cabin's
-        // exact lat/lng and shrink the radius to about 60.
-        { name: "The Cabin",              icon: "cabin",        lat: 38.19100, lng: -119.99600, radius: 3000,
+        // The exact cabin address isn't known, so this circle (5 km) covers all of Pinecrest:
+        // the village, the lake and the cabins along Dodge Ridge Road up to the ski area.
+        // If you learn the address later, swap in its lat/lng and shrink the radius to about 60.
+        { name: "The Cabin",              icon: "cabin",        lat: 38.19000, lng: -119.98000, radius: 5000,
           about: "Our cabin in the pines, the coziest place to settle in after a day in the mountains.",
           quote: { text: "“I went to the woods because I wished to live deliberately, to front only the essential facts of life, and see if I could not learn what it had to teach.”",
                    by: "Henry David Thoreau, Walden" },
