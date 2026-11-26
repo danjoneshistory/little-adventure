@@ -27,6 +27,9 @@
      opens    - optional date and time the place opens, e.g. "2026-12-13T17:00:00-07:00".
                 Before then the tile shows the date and the check-in button is turned off.
                 opensText: optional line shown instead of "This adventure opens on …".
+     closes   - optional date and time after which it can no longer be opened (closedText: the line shown then).
+     aim      - true = no GPS: she unlocks it by pointing her phone at the Moon (or the North Star
+                if the Moon has set). aimText: optional line shown above the button.
      about    - optional short description of the place, shown before they check in
      link     - optional { label, url } web link shown under the description
      banner   - optional picture (e.g. "images/poohsticks.jpg") shown at the top of the
@@ -72,9 +75,9 @@
                 { type: "halfsunk", message: ["YOU ARE MY", "FAVORITE", "ADVENTURE"] }   (up to 3 lines)
                 Star hop (a live map of the real sky; each star she finds gives one letter of the message,
                 then she watches for a shooting star):
-                { type: "starhop", message: "SAME SKY", lead: "line shown above the message at the end",
+                { type: "starhop", message: "SAME MOON AND STARS", lead: "line shown above the message at the end",
                   wish: "the shooting-star step", hops: [ { star, face, clue, fact, lines } ] }
-                One hop per letter (spaces don't count). star is a key from SKY_STARS (e.g. "castor", "bet",
+                The letters (spaces don't count) are shared out evenly across the hops. star is a key from SKY_STARS (e.g. "castor", "bet",
                 "alcyone" for the Pleiades); face is the compass direction in degrees (0 north, 90 east);
                 lines (cas, aur, tau, ori, gem) draws that constellation once the star is found.
                 Stars are all drawn white on purpose, so the clues can use colors only the real sky shows.
@@ -360,10 +363,14 @@ const HUNT = {
     { soon: true, name: "Hogle Zoo",          icon: "giraffe",  lat: 40.75037, lng: -111.81417, radius: 250, puzzle: "PUZZLE 6",  answers: ["answer6"],  prize: "PRIZE 6",  piece: "I" },
     { soon: true, name: "Wasatch Hollow",     icon: "trees",    lat: 40.73449, lng: -111.84399, radius: 150, puzzle: "PUZZLE 7",  answers: ["answer7"],  prize: "PRIZE 7",  piece: "E" },
     { soon: true, name: "Loki Coffee",        icon: "coffee",   lat: 40.75015, lng: -111.88152, radius: 60,  puzzle: "PUZZLE 8",  answers: ["answer8"],  prize: "PRIZE 8",  piece: "F" },
-    { soon: true, name: "Sugar House Park",   icon: "stargaze", lat: 40.72388, lng: -111.84940, radius: 400, piece: "O",
-      opens: "2026-12-13T17:00:00-07:00",
-      opensText: "This adventure opens on the night of Sunday, December 13, the peak of the Geminid meteor shower. Save the date!",
-      about: "A night under the stars on the big hill at Sugar House Park, on the best night of the year for shooting stars. The park closes at 9 pm in winter, so plan to arrive by about 7:45.",
+    // No GPS for this one: it opens on the night of the Geminids (Sunday evening Dec 13 until dawn
+    // Monday Dec 14), and she unlocks it by pointing her phone at the Moon.
+    { soon: true, name: "Under the Stars",    icon: "stargaze", aim: true, piece: "O",
+      opens: "2026-12-13T17:00:00-07:00", closes: "2026-12-14T07:30:00-07:00",
+      opensText: "This adventure opens on the evening of Sunday, December 13, the peak of the Geminid meteor shower. Save the date!",
+      closedText: "The night of the Geminids has passed.",
+      aimText: "When it’s dark and you’re under the open sky, point your phone at the Moon to begin.",
+      about: "A night under the stars, on the best night of the year for shooting stars. You can do this anywhere the sky is dark: get away from city lights, somewhere you can’t see any streetlights, with a wide view of the sky to the east and north. Let someone know where you’re going.",
       quote: { text: "Doubt thou the stars are fire;\nDoubt that the sun doth move;\nDoubt truth to be a liar;\nBut never doubt I love.",
                by: "William Shakespeare, Hamlet" },
       intro: {
@@ -372,7 +379,7 @@ const HUNT = {
           { heading: "Before you go",
             text: "1. Bundle up. December nights in Salt Lake are below freezing, and you’ll be sitting still. Bring a hat, gloves, and a blanket or camp chair.\n2. Fill a thermos with something warm.\n3. Turn your phone brightness all the way down. Bright screens undo your night vision.\n4. Optional: a free stargazing app like SkyView Lite or Stellarium can tell you what you’re looking at if you get stuck. Just hold your phone up to the sky." },
           { heading: "Your star mission",
-            text: "1. Find the darkest open spot you can on the big hill, away from the lamps and with a wide view of the sky to the east and north.\n2. Let your eyes adjust: put on the playlist and spend 15 minutes just looking up, no screens. You’ll be amazed how many more stars appear.\n3. Choose our star: pick out one star that you think should be ours, and give it a name. Remember where it is so you can show me someday." },
+            text: "1. Find the darkest open spot you can, with a wide view of the sky to the east and north. The star hop works best between about 8 and 9:30 pm. The shooting stars get better as the night goes on.\n2. Let your eyes adjust: put on the playlist and spend 15 minutes just looking up, no screens. You’ll be amazed how many more stars appear.\n3. Choose our star: pick out one star that you think should be ours, and give it a name. Remember where it is so you can show me someday." },
           { heading: "Your turn",
             text: "When your eyes are used to the dark and our star has a name, tap the button below." }
         ],
@@ -385,8 +392,8 @@ const HUNT = {
         text: "Take a picture of yourself all bundled up under the night sky to open your puzzle."
       },
       puzzle: "Seven stars are hiding a message for you. Find each one in the real sky, then tap it on the map. The map draws every star the same white, so you’ll have to look up to see their true colors.",
-      game: { type: "starhop", message: "SAME SKY", lead: "Wherever you are, we’re under the…",
-        wish: "Tonight is the peak of the Geminid meteor shower. Lie back, face east, and look about halfway up the sky. Shooting stars can streak across any part of it. They can take a while to show up, especially in the city, so be patient. (If the park is closing, you can keep watching from home.)\n\nWhen you see one, make a wish.",
+      game: { type: "starhop", message: "SAME MOON AND STARS", lead: "Wherever you are, we’re under the…",
+        wish: "Tonight is the peak of the Geminid meteor shower. Lie back, face east, and look about halfway up the sky. Shooting stars can streak across any part of it. They can take a while to show up, so be patient. They get more frequent as the night goes on, peaking around 2 am.\n\nWhen you see one, make a wish.",
         hops: [
           { star: "gCas", face: 0, lines: "cas", label: "Cassiopeia",
             clue: "Face north and look high up, more than halfway to straight overhead. Five fairly bright stars make a big W. Tonight it may look more like an M, or a 3 lying on its side. Tap the middle star of the W.",
@@ -407,7 +414,7 @@ const HUNT = {
             clue: "Lower down in the east, Orion the hunter is climbing into the sky on his side. First find his belt: three stars of the same brightness in a short, straight row. On one side of the belt is a blue-white star, and on the other is an orange-red one. Tap the orange-red one.",
             fact: "That’s Betelgeuse, Orion’s shoulder. It’s a red supergiant so huge that if it took the Sun’s place, it would swallow Mercury, Venus, Earth, and Mars. Someday it will explode, and for a few weeks it will be bright enough to see in the daytime." },
           { star: "castor", face: 65, lines: "gem",
-            clue: "Turn a little to your left, toward the east-northeast, and look low. Two bright stars sit close together like a pair of eyes. These are the Twins. One shines white and the other orange. Tap the white twin.",
+            clue: "Turn a little to your left, toward the east-northeast, and look below Capella. Two bright stars sit close together like a pair of eyes. These are the Twins. One shines white and the other orange. Tap the white twin.",
             fact: "That’s Castor, and its orange twin is Pollux. In Greek myth they were brothers who loved each other so much that Zeus put them in the sky side by side, so they would never be apart. Tonight’s shooting stars seem to fly out from right beside Castor. They’re dust from an asteroid called Phaethon, burning up as Earth plows through it." }
         ] } },
     { soon: true, name: "Guitar Center",      icon: "guitar",   lat: 40.64678, lng: -111.94265, radius: 90,  puzzle: "PUZZLE 10", answers: ["answer10"], prize: "PRIZE 10", piece: "H" }
@@ -829,8 +836,8 @@ label.ghost{display:block; text-align:center; color:var(--muted); border:2px das
 .shTurn .cxBtn{padding:.45rem .9rem; font-size:.88rem; white-space:nowrap}
 .shFace{font-weight:800; flex:1; max-width:11rem; font-size:.92rem}
 .shHow{color:var(--muted); font-size:.85rem; margin:.3rem auto .4rem; max-width:24rem}
-.shTray{gap:.25rem}
-.shGap{display:inline-block; width:1rem}
+.shTray{gap:.45rem .9rem}
+.shWord{display:inline-flex; gap:.2rem}
 .shClue{text-align:left; background:var(--bg); border:2px solid var(--line); border-radius:16px; padding:.8rem 1rem; margin:.4rem 0 .3rem}
 .shClue .primary, .shClue .ghost{margin-top:.6rem}
 .shStep{margin:0 0 .3rem; font-family:"Fredoka", ui-rounded, sans-serif; font-weight:600; color:var(--muted)}
@@ -839,6 +846,13 @@ label.ghost{display:block; text-align:center; color:var(--muted); border:2px das
 .shLow{color:var(--warn); font-weight:700}
 .shBig{font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; font-size:2rem; letter-spacing:.12em; text-align:center; margin:.2rem 0; color:var(--heart)}
 .shClue .lkLead{text-align:center}
+.shTray span{width:1.35rem; height:1.8rem; font-size:1rem}
+.amView{width:min(220px,70vw); margin:.8rem auto .2rem}
+.amView svg{width:100%; height:auto; display:block}
+.amRing{fill:none; stroke:#9AA3D6; stroke-width:2; stroke-dasharray:5 5; transition:stroke .2s}
+.amRing.on{stroke:#FF4F8B; stroke-width:4; stroke-dasharray:none}
+.amDot{filter:drop-shadow(0 0 6px #FFF4DE)}
+.amTip{text-align:center; font-weight:800; min-height:1.6em; margin:.4rem 0}
 @media (prefers-reduced-motion: reduce){ .shRing{animation:none} }
 </style>
 </head>
@@ -1222,6 +1236,8 @@ function renderGrid(app){
       t.append(el("span", {class:"tag"}, "Puzzle!"));
     } else if (notOpenYet(p)){
       t.append(el("span", {class:"tag"}, opensLabel(p)));
+    } else if (p.aim && !closedNow(p)){
+      t.append(el("span", {class:"tag"}, "Tonight!"));
     } else if (p.soon){
       t.append(el("span", {class:"tag"}, "Soon (test)"));
     }
@@ -1276,6 +1292,7 @@ function renderGrid(app){
 
 // A place with opens: "2026-12-13T17:00:00-07:00" can't be checked in to before then (test mode skips this).
 function notOpenYet(e){ return !!e.opens && Date.now() < Date.parse(e.opens); }
+function closedNow(e){ return !!e.closes && Date.now() > Date.parse(e.closes); }
 function opensLabel(e){ return new Date(e.opens).toLocaleDateString("en-US", {month:"short", day:"numeric", timeZone:"America/Denver"}); }
 
 /* One place */
@@ -1312,14 +1329,23 @@ function checkCard(e, i, c, prompt){
                link("Google Maps", "https://www.google.com/maps/dir/?api=1&destination=" + ll));
     card.append(el("p", {class:"dirsLabel"}, "Get directions"), row);
   }
-  const early = notOpenYet(e);
-  card.append(el("p", {class:"text", style: e.about ? "margin-top:1rem; font-weight:800" : "margin-top:1rem"}, early ? (e.opensText || "This adventure opens on " + opensLabel(e) + ".") : prompt));
-  const b = el("button", {type:"button", class:"primary", id:"check"}, early ? "Opens " + opensLabel(e) : "I’m here! Check my location");
-  if (early) b.disabled = true;
-  b.addEventListener("click", () => check(i, c));
-  card.append(b, el("p", {class:"status", id:"status"}));
+  const early = notOpenYet(e), late = closedNow(e), bold = e.about ? "margin-top:1rem; font-weight:800" : "margin-top:1rem";
+  if (early || late){
+    card.append(el("p", {class:"text", style:bold}, late ? (e.closedText || "This adventure’s night has passed.")
+      : (e.opensText || "This adventure opens on " + opensLabel(e) + ".")));
+    const b = el("button", {type:"button", class:"primary"}, late ? "Closed" : "Opens " + opensLabel(e));
+    b.disabled = true;
+    card.append(b, el("p", {class:"status", id:"status"}));
+  } else if (e.aim){
+    aimUnlock(card, e, () => arrive(i, c));
+  } else {
+    card.append(el("p", {class:"text", style:bold}, prompt));
+    const b = el("button", {type:"button", class:"primary", id:"check"}, "I’m here! Check my location");
+    b.addEventListener("click", () => check(i, c));
+    card.append(b, el("p", {class:"status", id:"status"}));
+  }
   if (TEST){
-    const u = el("button", {type:"button", class:"ghost"}, "Test: open without GPS");
+    const u = el("button", {type:"button", class:"ghost"}, e.aim ? "Test: open now" : "Test: open without GPS");
     u.addEventListener("click", () => arrive(i, c));
     card.append(u);
   }
@@ -2560,6 +2586,79 @@ function halfsunk(root, game, onWin){
   });
 }
 
+/* Aim at the sky: instead of GPS, she points the back of her phone at the Moon (or at the
+   North Star once the Moon has set). Generous on purpose, since phone compasses wander. */
+function aimUnlock(card, e, onDone){
+  const LAT = 40.76, LNG = -111.89;   // Salt Lake; anywhere nearby gives the same sky
+  const target = () => {
+    const J = skyJD(Date.now()), [ra, dec] = skyMoon(J), [alt, az] = skyAltAz(ra, dec, J, LAT, LNG);
+    return alt > 3 ? {name:"the Moon", alt, az, how:"Find the Moon, then hold your phone up and point the back of it (the camera end) right at it."}
+      : {name:"the North Star", alt:LAT, az:0, how:"The Moon has already set, so aim at the North Star instead: face north and point the back of your phone (the camera end) about halfway up the sky."};
+  };
+  let t = target();
+  card.append(el("p", {class:"text", style:"margin-top:1rem; font-weight:800"}, e.aimText || "To begin, point your phone at the Moon."));
+  const how = el("p", {class:"text"}, t.how);
+  const go = el("button", {type:"button", class:"primary"}, "Start aiming");
+  const view = el("div", {class:"amView", hidden:""});
+  view.innerHTML = `<svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="96" fill="#131A3C"/>
+    <circle cx="100" cy="100" r="26" class="amRing"/><path d="M100 84v32M84 100h32" stroke="#9AA3D6" stroke-width="1.5"/>
+    <circle class="amDot" cx="100" cy="100" r="9" fill="#FFF4DE"/></svg>`;
+  const tip = el("p", {class:"amTip", "aria-live":"polite"});
+  const msg = el("p", {class:"status", id:"status"});
+  const fallback = el("button", {type:"button", class:"ghost", hidden:""}, "My compass isn’t cooperating");
+  card.append(how, go, view, tip, msg, fallback);
+  fallback.addEventListener("click", onDone);
+
+  let held = 0, last = 0, got = false, done = false;
+  const dot = view.querySelector(".amDot"), ring = view.querySelector(".amRing");
+  const handle = ev => {
+    if (done || ev.beta == null) return;
+    got = true;
+    const a = (ev.alpha || 0) * D2R, b = ev.beta * D2R, g = (ev.gamma || 0) * D2R;
+    // Where the back of the phone points: -z of the device turned into east / north / up
+    const vx = -Math.cos(a) * Math.sin(g) - Math.sin(a) * Math.sin(b) * Math.cos(g);
+    const vy = -Math.sin(a) * Math.sin(g) + Math.cos(a) * Math.sin(b) * Math.cos(g);
+    const vz = -Math.cos(b) * Math.cos(g);
+    const alt = Math.asin(Math.max(-1, Math.min(1, vz))) / D2R;
+    let az = ((Math.atan2(vx, vy) / D2R) + 360) % 360;
+    if (ev.webkitCompassHeading != null) az = (ev.webkitCompassHeading + 10.5) % 360;   // iPhone: magnetic → true north in Utah
+    const dAz = ((t.az - az + 540) % 360) - 180, dAlt = t.alt - alt;
+    const k = 2.2, x = Math.max(-88, Math.min(88, dAz * Math.cos(t.alt * D2R) * k)), y = Math.max(-88, Math.min(88, -dAlt * k));
+    dot.setAttribute("cx", 100 + x); dot.setAttribute("cy", 100 + y);
+    const off = Math.hypot(dAz * Math.cos(t.alt * D2R), dAlt), now = performance.now();
+    const steer = [dAlt > 8 ? "tilt up" : dAlt < -8 ? "tilt down" : "", dAz > 12 ? "turn right" : dAz < -12 ? "turn left" : ""].filter(Boolean).join(" and ");
+    if (off < 20){
+      held += last ? now - last : 0; ring.classList.add("on");
+      tip.textContent = "Hold it there…";
+      if (held > 1500){
+        done = true; stop(); tip.textContent = "You found " + t.name + "! 🌙"; burst(16);
+        setTimeout(onDone, 1200);
+      }
+    } else {
+      held = 0; ring.classList.remove("on");
+      tip.textContent = steer ? steer[0].toUpperCase() + steer.slice(1) + " to find " + t.name + "." : "Almost there…";
+    }
+    last = now;
+  };
+  const evName = "ondeviceorientationabsolute" in window ? "deviceorientationabsolute" : "deviceorientation";
+  const stop = () => removeEventListener(evName, handle);
+  go.addEventListener("click", async () => {
+    try {
+      if (window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === "function"){
+        if (await DeviceOrientationEvent.requestPermission() !== "granted"){
+          setStatus("Motion access was turned off. Reload the page and tap Allow when it asks.", "warn"); fallback.hidden = false; return;
+        }
+      }
+    } catch(err){}
+    t = target(); how.textContent = t.how;
+    go.hidden = true; view.hidden = false;
+    addEventListener(evName, handle);
+    setTimeout(() => { if (!got){ setStatus("This phone isn’t sharing its motion sensors.", "warn"); fallback.hidden = false; } }, 3000);
+    setTimeout(() => { if (!done) fallback.hidden = false; }, 30000);
+    const tick = setInterval(() => { if (done || !document.body.contains(view)){ clearInterval(tick); stop(); } }, 2000);
+  });
+}
+
 /* Star hop: a live map of the real sky over Salt Lake. The stars are all drawn plain white,
    so the clues lean on things only the real sky shows (color, twinkle, how misty).
    Each star she finds gives one letter of the message, then she watches for a shooting star. */
@@ -2642,7 +2741,11 @@ function starhop(root, game, onWin){
   turn.append(bL, face, bR);
   const how = el("p", {class:"shHow"}, "Hold your phone up so the bottom of the map points the way you’re facing. The middle of the map is straight overhead, and the edge is the horizon.");
   const tray = el("div", {class:"lkTray shTray", "aria-label":"Letters found"});
-  [...String(game.message).toUpperCase()].forEach(ch => tray.append(ch === " " ? el("i", {class:"shGap"}) : el("span", {})));
+  String(game.message).toUpperCase().split(/\s+/).filter(Boolean).forEach(w => {   // one unbreakable group per word
+    const g = el("b", {class:"shWord"});
+    [...w].forEach(() => g.append(el("span", {})));
+    tray.append(g);
+  });
   const clueBox = el("div", {class:"shClue", "aria-live":"polite"});
   const msg = el("p", {class:"status", role:"status"});
   wrap.append(when, scene, turn, how, tray, clueBox, msg);
@@ -2744,13 +2847,15 @@ function starhop(root, game, onWin){
     }
   }
   function gotIt(skipped){
-    const h = hops[n];
-    const slot = tray.querySelectorAll("span")[n];
-    if (slot){ slot.textContent = letters[n] || ""; slot.classList.add("on"); }
+    const h = hops[n], slots = tray.querySelectorAll("span");
+    // Each star gives its share of the letters (spaces don't count)
+    for (let j = Math.floor(n * letters.length / hops.length); j < Math.floor((n + 1) * letters.length / hops.length); j++){
+      if (slots[j]){ slots[j].textContent = letters[j]; slots[j].classList.add("on"); }
+    }
     found.push(n); misses = 0;
     draw();
     clueBox.textContent = "";
-    clueBox.append(el("p", {class:"shStep ok"}, skipped ? "Skipped, but here’s your letter." : "You found it! ✨"));
+    clueBox.append(el("p", {class:"shStep ok"}, skipped ? "Skipped, but here are your letters." : "You found it! ✨"));
     if (h.fact) clueBox.append(el("p", {class:"shText"}, h.fact));
     const nx = el("button", {type:"button", class:"primary"}, n + 1 < hops.length ? "Next star ›" : "One last thing ›");
     nx.addEventListener("click", () => {
