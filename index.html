@@ -24,6 +24,9 @@
      quote    - optional { text, by } shown at the top of the win screen
      piece    - their piece of the final puzzle: one letter of FAITH HOPE LOVE,
                 shown on the heart they win
+     opens    - optional date and time the place opens, e.g. "2026-12-13T17:00:00-07:00".
+                Before then the tile shows the date and the check-in button is turned off.
+                opensText: optional line shown instead of "This adventure opens on …".
      about    - optional short description of the place, shown before they check in
      link     - optional { label, url } web link shown under the description
      banner   - optional picture (e.g. "images/poohsticks.jpg") shown at the top of the
@@ -67,6 +70,14 @@
                   The rows hold the solved stones; each stone starts turned the wrong way. Ask Claude to make a new grid.
                 Half-sunk letters (wooden letter blocks with only their tops above water):
                 { type: "halfsunk", message: ["YOU ARE MY", "FAVORITE", "ADVENTURE"] }   (up to 3 lines)
+                Star hop (a live map of the real sky; each star she finds gives one letter of the message,
+                then she watches for a shooting star):
+                { type: "starhop", message: "SAME SKY", lead: "line shown above the message at the end",
+                  wish: "the shooting-star step", hops: [ { star, face, clue, fact, lines } ] }
+                One hop per letter (spaces don't count). star is a key from SKY_STARS (e.g. "castor", "bet",
+                "alcyone" for the Pleiades); face is the compass direction in degrees (0 north, 90 east);
+                lines (cas, aur, tau, ori, gem) draws that constellation once the star is found.
+                Stars are all drawn white on purpose, so the clues can use colors only the real sky shows.
      choices  - optional: instead of one lat/lng, a list of spots to pick from.
                 Each spot gets its own screen and its own puzzle / answers / prize.
                 They can switch between spots any time; solving any one earns the piece.
@@ -349,7 +360,56 @@ const HUNT = {
     { soon: true, name: "Hogle Zoo",          icon: "giraffe",  lat: 40.75037, lng: -111.81417, radius: 250, puzzle: "PUZZLE 6",  answers: ["answer6"],  prize: "PRIZE 6",  piece: "I" },
     { soon: true, name: "Wasatch Hollow",     icon: "trees",    lat: 40.73449, lng: -111.84399, radius: 150, puzzle: "PUZZLE 7",  answers: ["answer7"],  prize: "PRIZE 7",  piece: "E" },
     { soon: true, name: "Loki Coffee",        icon: "coffee",   lat: 40.75015, lng: -111.88152, radius: 60,  puzzle: "PUZZLE 8",  answers: ["answer8"],  prize: "PRIZE 8",  piece: "F" },
-    { soon: true, name: "Sugar House Park",   icon: "duck",     lat: 40.72388, lng: -111.84940, radius: 400, puzzle: "PUZZLE 9",  answers: ["answer9"],  prize: "PRIZE 9",  piece: "O" },
+    { soon: true, name: "Sugar House Park",   icon: "stargaze", lat: 40.72388, lng: -111.84940, radius: 400, piece: "O",
+      opens: "2026-12-13T17:00:00-07:00",
+      opensText: "This adventure opens on the night of Sunday, December 13, the peak of the Geminid meteor shower. Save the date!",
+      about: "A night under the stars on the big hill at Sugar House Park, on the best night of the year for shooting stars. The park closes at 9 pm in winter, so plan to arrive by about 7:45.",
+      quote: { text: "Doubt thou the stars are fire;\nDoubt that the sun doth move;\nDoubt truth to be a liar;\nBut never doubt I love.",
+               by: "William Shakespeare, Hamlet" },
+      intro: {
+        sections: [
+          { text: "DRAFT, PLEASE REPLACE: Tonight the Geminids are falling, the best meteor shower of the whole year. I can’t be there to hold your hand and look up with you, so I’ve left you a map to the stars instead. Every star you find tonight is one I’d want to show you myself." },
+          { heading: "Before you go",
+            text: "1. Bundle up. December nights in Salt Lake are below freezing, and you’ll be sitting still. Bring a hat, gloves, and a blanket or camp chair.\n2. Fill a thermos with something warm.\n3. Turn your phone brightness all the way down. Bright screens undo your night vision.\n4. Optional: a free stargazing app like SkyView Lite or Stellarium can tell you what you’re looking at if you get stuck. Just hold your phone up to the sky." },
+          { heading: "Your star mission",
+            text: "1. Find the darkest open spot you can on the big hill, away from the lamps and with a wide view of the sky to the east and north.\n2. Let your eyes adjust: put on the playlist and spend 15 minutes just looking up, no screens. You’ll be amazed how many more stars appear.\n3. Choose our star: pick out one star that you think should be ours, and give it a name. Remember where it is so you can show me someday." },
+          { heading: "Your turn",
+            text: "When your eyes are used to the dark and our star has a name, tap the button below." }
+        ],
+        playlist: "https://open.spotify.com/playlist/5126cJ0qFPalGtn1WR2pUN?si=03c0bc632fb245db",
+        playlistText: "A feel-good playlist for feel-good places.",
+        button: "My eyes are ready!"
+      },
+      photo: {
+        heading: "Picture time!",
+        text: "Take a picture of yourself all bundled up under the night sky to open your puzzle."
+      },
+      puzzle: "Seven stars are hiding a message for you. Find each one in the real sky, then tap it on the map. The map draws every star the same white, so you’ll have to look up to see their true colors.",
+      game: { type: "starhop", message: "SAME SKY", lead: "Wherever you are, we’re under the…",
+        wish: "Tonight is the peak of the Geminid meteor shower. Lie back, face east, and look about halfway up the sky. Shooting stars can streak across any part of it. They can take a while to show up, especially in the city, so be patient. (If the park is closing, you can keep watching from home.)\n\nWhen you see one, make a wish.",
+        hops: [
+          { star: "gCas", face: 0, lines: "cas", label: "Cassiopeia",
+            clue: "Face north and look high up, more than halfway to straight overhead. Five fairly bright stars make a big W. Tonight it may look more like an M, or a 3 lying on its side. Tap the middle star of the W.",
+            fact: "That’s Cassiopeia, the queen. In Greek myth she boasted that she was more beautiful than the sea nymphs, so she was put in the sky on her throne, spinning around the North Star forever." },
+          { star: "polaris", face: 0,
+            clue: "Keep facing north, and drop your eyes about halfway down toward the horizon. One medium-bright star sits there all on its own, with no bright neighbors. Tap it.",
+            fact: "That’s Polaris, the North Star. It sits almost directly above the North Pole, so the whole sky turns around it while it stays put. Its height above the horizon always matches your latitude: about 41° here in Salt Lake." },
+          { star: "capella", face: 45, lines: "aur",
+            clue: "Turn to the northeast and look high up. The brightest star in that whole part of the sky shines a soft yellow. Tap it.",
+            fact: "That’s Capella, the goat star. It looks like one star, but it’s really two yellow giants circling each other, plus a faint pair of red dwarfs. The light hitting your eyes left it about 43 years ago." },
+          { star: "alcyone", face: 90,
+            clue: "Now face east and look high, a little to the right of Capella. Find a tiny, misty clump of stars that looks like a miniature dipper. It’s easier to see if you look just beside it instead of straight at it. Tap the clump.",
+            fact: "That’s the Pleiades, the Seven Sisters, a family of young stars born together. Most people can see six of them. In Japan they’re called Subaru, and they’re the stars on the Subaru car logo." },
+          { star: "ald", face: 90, lines: "tau", below: true,
+            clue: "Just below the misty clump, find a bright orange star at the tip of a little V of fainter stars. Tap the orange star.",
+            fact: "That’s Aldebaran, the red eye of Taurus the bull. Its name means “the follower” in Arabic, because it follows the Pleiades across the sky every night. It’s an orange giant about 44 times wider than our Sun." },
+          { star: "bet", face: 100, lines: "ori",
+            clue: "Lower down in the east, Orion the hunter is climbing into the sky on his side. First find his belt: three stars of the same brightness in a short, straight row. On one side of the belt is a blue-white star, and on the other is an orange-red one. Tap the orange-red one.",
+            fact: "That’s Betelgeuse, Orion’s shoulder. It’s a red supergiant so huge that if it took the Sun’s place, it would swallow Mercury, Venus, Earth, and Mars. Someday it will explode, and for a few weeks it will be bright enough to see in the daytime." },
+          { star: "castor", face: 65, lines: "gem",
+            clue: "Turn a little to your left, toward the east-northeast, and look low. Two bright stars sit close together like a pair of eyes. These are the Twins. One shines white and the other orange. Tap the white twin.",
+            fact: "That’s Castor, and its orange twin is Pollux. In Greek myth they were brothers who loved each other so much that Zeus put them in the sky side by side, so they would never be apart. Tonight’s shooting stars seem to fly out from right beside Castor. They’re dust from an asteroid called Phaethon, burning up as Earth plows through it." }
+        ] } },
     { soon: true, name: "Guitar Center",      icon: "guitar",   lat: 40.64678, lng: -111.94265, radius: 90,  puzzle: "PUZZLE 10", answers: ["answer10"], prize: "PRIZE 10", piece: "H" }
   ]
 };
@@ -754,6 +814,32 @@ label.ghost{display:block; text-align:center; color:var(--muted); border:2px das
 .test{margin-top:2rem; padding-top:1rem; border-top:2px dashed var(--warn); text-align:center}
 .test p{color:var(--warn); margin:0; font-size:.9rem; font-weight:700}
 @media (prefers-reduced-motion: reduce){ .reveal, .cxGroup, .shake, .pop{animation:none} .burst, .confetti{display:none} .tile{transition:none} }
+.sh{margin-top:1rem; text-align:center}
+.shWhen{color:var(--muted); font-weight:700; font-size:.92rem; margin:0 0 .5rem}
+.shScene{width:100%; max-width:26rem; margin:0 auto; border-radius:18px; overflow:hidden; line-height:0; background:#0C1028}
+.shScene svg{width:100%; height:auto; display:block; cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent}
+.shDir{fill:#9AA3D6; font:700 13px Nunito, system-ui, sans-serif; text-anchor:middle}
+.shDir.sm{font-size:10px; fill:#6E77A8}
+.shTag{fill:#C9C2A8; font:600 9px Nunito, system-ui, sans-serif; text-anchor:middle}
+.shName{fill:#FFC2D8; font:700 10.5px Nunito, system-ui, sans-serif; text-anchor:middle}
+.shRing{fill:none; stroke:#FF4F8B; stroke-width:2.2; animation:pop .4s cubic-bezier(.2,1.4,.4,1) both; transform-box:fill-box; transform-origin:center}
+.shHint{fill:#FF4F8B; fill-opacity:.08; stroke:#FF4F8B; stroke-width:1.6; stroke-dasharray:4 4}
+.shLines line{stroke:#8FA0FF; stroke-width:1.1; stroke-opacity:.55}
+.shTurn{display:flex; flex-wrap:nowrap; align-items:center; justify-content:center; gap:.5rem; margin:.6rem 0 .2rem}
+.shTurn .cxBtn{padding:.45rem .9rem; font-size:.88rem; white-space:nowrap}
+.shFace{font-weight:800; flex:1; max-width:11rem; font-size:.92rem}
+.shHow{color:var(--muted); font-size:.85rem; margin:.3rem auto .4rem; max-width:24rem}
+.shTray{gap:.25rem}
+.shGap{display:inline-block; width:1rem}
+.shClue{text-align:left; background:var(--bg); border:2px solid var(--line); border-radius:16px; padding:.8rem 1rem; margin:.4rem 0 .3rem}
+.shClue .primary, .shClue .ghost{margin-top:.6rem}
+.shStep{margin:0 0 .3rem; font-family:"Fredoka", ui-rounded, sans-serif; font-weight:600; color:var(--muted)}
+.shStep.ok{color:var(--ok)}
+.shText{margin:.2rem 0; white-space:pre-line}
+.shLow{color:var(--warn); font-weight:700}
+.shBig{font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; font-size:2rem; letter-spacing:.12em; text-align:center; margin:.2rem 0; color:var(--heart)}
+.shClue .lkLead{text-align:center}
+@media (prefers-reduced-motion: reduce){ .shRing{animation:none} }
 </style>
 </head>
 <body>
@@ -888,6 +974,12 @@ const ICONS = {
   gift: `<svg viewBox="0 0 64 64"><rect x="10" y="26" width="44" height="30" rx="5" fill="#C4B0FF" ${S}/>
     <rect x="7" y="18" width="50" height="10" rx="4" fill="#FF8FB8" ${S}/><path d="M32 18 V56" ${S}/>
     <path d="M32 18 C24 6 14 12 20 18 M32 18 C40 6 50 12 44 18" fill="none" ${S}/></svg>`,
+  stargaze: `<svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="#2E3470" ${S}/>
+    <path d="M8 46 L22 34 L32 40 L44 30 L56 42 A27 27 0 0 1 8 46 Z" fill="#4C5596" ${S}/>
+    <path d="M44 12 a9 9 0 1 0 8 13 a7 7 0 0 1 -8 -13 Z" fill="#FFF1C9" ${S} stroke-width="2"/>
+    <path d="M14 14 L27 25" stroke="#FFDB75" stroke-width="2.6" stroke-linecap="round" opacity=".9"/>
+    <path d="M28 23 l1.6 3.4 3.6.4 -2.7 2.4 .8 3.6 -3.3-1.9 -3.3 1.9 .8-3.6 -2.7-2.4 3.6-.4z" fill="#FFDB75" ${S} stroke-width="1.6"/>
+    <circle cx="18" cy="30" r="1.5" fill="#fff"/><circle cx="40" cy="22" r="1.3" fill="#fff"/><circle cx="24" cy="12" r="1.1" fill="#fff"/><circle cx="48" cy="34" r="1.2" fill="#fff"/></svg>`,
   star: `<svg viewBox="0 0 64 64"><path d="M32 6 L39 22 L56 24 L43 36 L47 54 L32 45 L17 54 L21 36 L8 24 L25 22 Z" fill="#FFDB75" ${S}/>
     ${eyes(27,37,30)}${cheeks(23,41,35)}${smile(32,35,3)}</svg>`
 };
@@ -1113,7 +1205,7 @@ function renderGrid(app){
   const grid = el("div", {class:"grid"});
   P.forEach((p, i) => {
     const solved = has(state.solved, i), arrived = has(state.arrived, i);
-    if (p.soon){
+    if (p.soon && !TEST){
       const t = el("button", {type:"button", class:"tile soon", "aria-label":"Coming soon", "aria-disabled":"true"});
       t.style.setProperty("--c", colorOf(i));
       t.append(art(ICONS.mystery, "ic"), el("span", {class:"nm"}, "Coming Soon"));
@@ -1128,6 +1220,10 @@ function renderGrid(app){
       t.append(el("span", {class:"check", "aria-label":"Completed"}, "✓"));
     } else if (arrived){
       t.append(el("span", {class:"tag"}, "Puzzle!"));
+    } else if (notOpenYet(p)){
+      t.append(el("span", {class:"tag"}, opensLabel(p)));
+    } else if (p.soon){
+      t.append(el("span", {class:"tag"}, "Soon (test)"));
     }
     t.setAttribute("aria-label", p.name + ", " + (solved ? "solved" : arrived ? "puzzle open" : "not visited yet"));
     t.addEventListener("click", () => go(i));
@@ -1178,6 +1274,10 @@ function renderGrid(app){
   }
 }
 
+// A place with opens: "2026-12-13T17:00:00-07:00" can't be checked in to before then (test mode skips this).
+function notOpenYet(e){ return !!e.opens && Date.now() < Date.parse(e.opens); }
+function opensLabel(e){ return new Date(e.opens).toLocaleDateString("en-US", {month:"short", day:"numeric", timeZone:"America/Denver"}); }
+
 /* One place */
 function backBtn(label, fn){
   const b = el("button", {type:"button", class:"back"}, label);
@@ -1212,8 +1312,10 @@ function checkCard(e, i, c, prompt){
                link("Google Maps", "https://www.google.com/maps/dir/?api=1&destination=" + ll));
     card.append(el("p", {class:"dirsLabel"}, "Get directions"), row);
   }
-  card.append(el("p", {class:"text", style: e.about ? "margin-top:1rem; font-weight:800" : "margin-top:1rem"}, prompt));
-  const b = el("button", {type:"button", class:"primary", id:"check"}, "I’m here! Check my location");
+  const early = notOpenYet(e);
+  card.append(el("p", {class:"text", style: e.about ? "margin-top:1rem; font-weight:800" : "margin-top:1rem"}, early ? (e.opensText || "This adventure opens on " + opensLabel(e) + ".") : prompt));
+  const b = el("button", {type:"button", class:"primary", id:"check"}, early ? "Opens " + opensLabel(e) : "I’m here! Check my location");
+  if (early) b.disabled = true;
   b.addEventListener("click", () => check(i, c));
   card.append(b, el("p", {class:"status", id:"status"}));
   if (TEST){
@@ -1370,7 +1472,7 @@ function renderPlace(app, i){
   const card = el("section", {class:"card" + (flash === "arrive" ? " reveal" : "")});
   card.append(el("h2", {}, "Your puzzle"));
   card.append(el("p", {class:"text"}, e.puzzle));
-  const GAMES = {connections, strands, crossword, spellingbee, wordle, ladder, morse, reflection, mirrordiff, sunbeam, halfsunk};
+  const GAMES = {connections, strands, crossword, spellingbee, wordle, ladder, morse, reflection, mirrordiff, sunbeam, halfsunk, starhop};
   if (!solved && e.game && GAMES[e.game.type]){
     GAMES[e.game.type](card, e.game, () => solve(i, c));
     if (TEST){
@@ -2456,6 +2558,245 @@ function halfsunk(root, game, onWin){
     flashMsg(msg, "You read the water! 💕", "ok");
     setTimeout(onWin, 1600);
   });
+}
+
+/* Star hop: a live map of the real sky over Salt Lake. The stars are all drawn plain white,
+   so the clues lean on things only the real sky shows (color, twinkle, how misty).
+   Each star she finds gives one letter of the message, then she watches for a shooting star. */
+const SKY_STARS = [
+  // key, name, RA (hours), Dec (degrees), magnitude
+  ["aCas","Schedar",0.675,56.54,2.2],["bCas","Caph",0.153,59.15,2.3],["gCas","Gamma Cassiopeiae",0.945,60.72,2.2],["dCas","Ruchbah",1.430,60.24,2.7],["eCas","Segin",1.907,63.67,3.4],
+  ["polaris","Polaris, the North Star",2.530,89.26,2.0],["kochab","Kochab",14.845,74.16,2.1],
+  ["dubhe","Dubhe",11.062,61.75,1.8],["merak","Merak",11.031,56.38,2.4],["phecda","Phecda",11.897,53.69,2.4],["megrez","Megrez",12.257,57.03,3.3],
+  ["alioth","Alioth",12.900,55.96,1.8],["mizar","Mizar",13.399,54.93,2.2],["alkaid","Alkaid",13.792,49.31,1.9],
+  ["mirfak","Mirfak",3.405,49.86,1.8],["algol","Algol",3.136,40.96,2.1],["zPer","Zeta Persei",3.902,31.88,2.9],["ePer","Epsilon Persei",3.964,40.01,2.9],["dPer","Delta Persei",3.715,47.79,3.0],["gPer","Gamma Persei",3.080,53.51,2.9],
+  ["capella","Capella",5.278,46.00,0.1],["menk","Menkalinan",5.992,44.95,1.9],["tAur","Theta Aurigae",5.995,37.21,2.6],["iAur","Hassaleh",4.950,33.17,2.7],["eAur","Almaaz",5.033,43.82,3.0],["elnath","Elnath",5.438,28.61,1.7],
+  ["ald","Aldebaran",4.599,16.51,0.9],["zTau","Zeta Tauri",5.627,21.14,3.0],["gTau","Gamma Tauri",4.330,15.63,3.7],["dTau","Delta Tauri",4.382,17.54,3.8],["eTau","Epsilon Tauri",4.477,19.18,3.5],["thTau","Theta Tauri",4.478,15.87,3.4],
+  ["alcyone","the Pleiades",3.791,24.11,2.9,"ple"],["atlas","the Pleiades",3.819,24.05,3.6,"ple"],["electra","the Pleiades",3.748,24.11,3.7,"ple"],["maia","the Pleiades",3.764,24.37,3.9,"ple"],["merope","the Pleiades",3.772,23.95,4.2,"ple"],["taygeta","the Pleiades",3.754,24.47,4.3,"ple"],
+  ["bet","Betelgeuse",5.919,7.41,0.5],["rigel","Rigel",5.242,-8.20,0.1],["bellatrix","Bellatrix",5.419,6.35,1.6],["saiph","Saiph",5.796,-9.67,2.1],
+  ["alnitak","Alnitak",5.679,-1.94,1.8],["alnilam","Alnilam",5.604,-1.20,1.7],["mintaka","Mintaka",5.533,-0.30,2.2],["meissa","Meissa",5.585,9.93,3.4],
+  ["castor","Castor",7.577,31.89,1.6],["pollux","Pollux",7.755,28.03,1.1],["alhena","Alhena",6.629,16.40,1.9],["eGem","Mebsuta",6.732,25.13,3.0],["mGem","Tejat",6.383,22.51,2.9],["hGem","Propus",6.248,22.51,3.3],["dGem","Wasat",7.335,21.98,3.5],["kGem","Kappa Geminorum",7.741,24.40,3.6],["xGem","Xi Geminorum",6.755,12.90,3.4],
+  ["procyon","Procyon",7.655,5.22,0.4],["gomeisa","Gomeisa",7.453,8.29,2.9],
+  ["sirius","Sirius",6.752,-16.72,-1.5],["mirzam","Mirzam",6.378,-17.96,2.0],["adhara","Adhara",6.977,-28.97,1.5],["wezen","Wezen",7.140,-26.39,1.8],
+  ["arneb","Arneb",5.546,-17.82,2.6],["nihal","Nihal",5.471,-20.76,2.8],["cursa","Cursa",5.131,-5.09,2.8],
+  ["alpheratz","Alpheratz",0.140,29.09,2.1],["mirach","Mirach",1.162,35.62,2.1],["almach","Almach",2.065,42.33,2.1],["dAnd","Delta Andromedae",0.656,30.86,3.3],
+  ["markab","Markab",23.079,15.21,2.5],["scheat","Scheat",23.063,28.08,2.4],["algenib","Algenib",0.221,15.18,2.8],["enif","Enif",21.736,9.88,2.4],
+  ["hamal","Hamal",2.120,23.46,2.0],["sheratan","Sheratan",1.911,20.81,2.6],["diphda","Diphda",0.727,-17.99,2.0],["menkar","Menkar",3.038,4.09,2.5],["fomalhaut","Fomalhaut",22.961,-29.62,1.2],
+  ["deneb","Deneb",20.690,45.28,1.3],["sadr","Sadr",20.370,40.26,2.2],["gienah","Gienah",20.770,33.97,2.5],["dCyg","Delta Cygni",19.750,45.13,2.9],["albireo","Albireo",19.512,27.96,3.1],
+  ["vega","Vega",18.616,38.78,0.0],["altair","Altair",19.846,8.87,0.8],["alderamin","Alderamin",21.310,62.59,2.5],["eltanin","Eltanin",17.943,51.49,2.2],
+  ["regulus","Regulus",10.140,11.97,1.4],["algieba","Algieba",10.333,19.84,2.0],["denebola","Denebola",11.818,14.57,2.1]
+];
+const SKY_LINES = {
+  cas: "bCas-aCas aCas-gCas gCas-dCas dCas-eCas",
+  aur: "capella-menk menk-tAur tAur-elnath elnath-iAur iAur-eAur eAur-capella",
+  tau: "ald-thTau thTau-gTau gTau-dTau dTau-eTau eTau-elnath ald-zTau",
+  ori: "bet-meissa meissa-bellatrix bet-alnitak bellatrix-mintaka alnitak-alnilam alnilam-mintaka alnitak-saiph mintaka-rigel",
+  gem: "castor-pollux castor-eGem eGem-mGem mGem-hGem pollux-kGem kGem-dGem dGem-alhena",
+  umi: "", ple: ""
+};
+// Saturn barely moves in December 2026; Jupiter rises after 10 pm in Leo.
+const SKY_PLANETS = [["Saturn", 8.0 / 15, 0.7, 0.8], ["Jupiter", 149.2 / 15, 13.4, -2.4]];
+const D2R = Math.PI / 180;
+function skyJD(t){ return t / 86400000 + 2440587.5; }
+function skyAltAz(raH, dec, J, lat, lng){
+  const H = ((280.46061837 + 360.98564736629 * (J - 2451545) + lng - raH * 15) % 360) * D2R;
+  const d = dec * D2R, la = lat * D2R;
+  const alt = Math.asin(Math.sin(la) * Math.sin(d) + Math.cos(la) * Math.cos(d) * Math.cos(H));
+  const az = Math.atan2(-Math.sin(H) * Math.cos(d), Math.sin(d) * Math.cos(la) - Math.cos(d) * Math.sin(la) * Math.cos(H));
+  return [alt / D2R, ((az / D2R) % 360 + 360) % 360];
+}
+function eclToEq(lon, lat, d){
+  const e = (23.439 - 0.00000036 * d) * D2R;
+  const x = Math.cos(lat) * Math.cos(lon), y = Math.cos(lat) * Math.sin(lon), z = Math.sin(lat);
+  const y2 = y * Math.cos(e) - z * Math.sin(e), z2 = y * Math.sin(e) + z * Math.cos(e);
+  return [((Math.atan2(y2, x) / D2R + 360) % 360) / 15, Math.asin(z2) / D2R];
+}
+function skySun(J){
+  const d = J - 2451545, g = (357.529 + 0.98560028 * d) * D2R;
+  return eclToEq((280.459 + 0.98564736 * d) * D2R + (1.915 * Math.sin(g) + 0.02 * Math.sin(2 * g)) * D2R, 0, d);
+}
+function skyMoon(J){
+  const d = J - 2451545, M = (134.963 + 13.064993 * d) * D2R, F = (93.272 + 13.229350 * d) * D2R;
+  return eclToEq((218.316 + 13.176396 * d) * D2R + 6.289 * D2R * Math.sin(M), 5.128 * D2R * Math.sin(F), d);
+}
+const COMPASS16 = ["north","north-northeast","northeast","east-northeast","east","east-southeast","southeast","south-southeast",
+  "south","south-southwest","southwest","west-southwest","west","west-northwest","northwest","north-northwest"];
+
+function starhop(root, game, onWin){
+  const LAT = game.lat || 40.7239, LNG = game.lng || -111.8494;
+  const hops = game.hops, letters = String(game.message).toUpperCase().replace(/\s+/g, "");
+  const preview = game.preview || "2026-12-14T03:15:00Z";   // 8:15 pm in Salt Lake on December 13
+  const W = 360, C = 180, R = 163;
+  let n = 0, misses = 0, facing = hops[0].face || 0, J, live, timer;
+  const found = [];
+
+  const wrap = el("div", {class:"sh"});
+  const when = el("p", {class:"shWhen"});
+  const scene = el("div", {class:"shScene"});
+  const svg = sv("svg", {viewBox:`0 0 ${W} ${W}`, role:"img", "aria-label":"A map of the night sky. The middle is straight overhead and the edge is the horizon."});
+  scene.append(svg);
+  const turn = el("div", {class:"shTurn"});
+  const bL = el("button", {type:"button", class:"cxBtn", "aria-label":"Turn left"}, "↺ Left");
+  const face = el("span", {class:"shFace", "aria-live":"polite"});
+  const bR = el("button", {type:"button", class:"cxBtn", "aria-label":"Turn right"}, "Right ↻");
+  turn.append(bL, face, bR);
+  const how = el("p", {class:"shHow"}, "Hold your phone up so the bottom of the map points the way you’re facing. The middle of the map is straight overhead, and the edge is the horizon.");
+  const tray = el("div", {class:"lkTray shTray", "aria-label":"Letters found"});
+  [...String(game.message).toUpperCase()].forEach(ch => tray.append(ch === " " ? el("i", {class:"shGap"}) : el("span", {})));
+  const clueBox = el("div", {class:"shClue", "aria-live":"polite"});
+  const msg = el("p", {class:"status", role:"status"});
+  wrap.append(when, scene, turn, how, tray, clueBox, msg);
+  root.append(wrap);
+
+  const pick = () => {
+    const now = Date.now(), Jn = skyJD(now);
+    const [sra, sdec] = skySun(Jn);
+    if (skyAltAz(sra, sdec, Jn, LAT, LNG)[0] < -10){ J = Jn; live = true; }
+    else { J = skyJD(Date.parse(preview)); live = false; }
+    when.textContent = live ? "This is the sky above you right now."
+      : "It isn’t dark yet, so this is the sky at 8:15 pm on December 13. After dark, the map shows the sky right now.";
+  };
+  const proj = (alt, az) => {
+    const r = R * Math.tan((90 - alt) / 2 * D2R), th = (az - facing) * D2R;
+    return [C + r * Math.sin(th), C + r * Math.cos(th)];
+  };
+  const byKey = {};
+  SKY_STARS.forEach(s => byKey[s[0]] = s);
+  const target = () => hops[n] && byKey[hops[n].star];
+  const sameAs = (s, t) => s === t || (t[5] && s[5] === t[5]);
+
+  let pts = [];
+  function draw(){
+    svg.textContent = "";
+    const defs = sv("defs");
+    defs.innerHTML = `<radialGradient id="shSky" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#1B2350"/><stop offset=".8" stop-color="#131A3C"/><stop offset="1" stop-color="#2B2A4E"/></radialGradient>
+      <radialGradient id="shGlow"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>`;
+    svg.append(defs, sv("rect", {width:W, height:W, fill:"#0C1028"}), sv("circle", {cx:C, cy:C, r:R, fill:"url(#shSky)", stroke:"#3C4374", "stroke-width":2}));
+    // Altitude rings at 30° and 60°, and the overhead point
+    [30, 60].forEach(a => svg.append(sv("circle", {cx:C, cy:C, r:R * Math.tan((90 - a) / 2 * D2R), fill:"none", stroke:"#fff", "stroke-opacity":.07, "stroke-dasharray":"3 5"})));
+    svg.append(sv("circle", {cx:C, cy:C, r:1.6, fill:"#fff", opacity:.25}));
+    // Compass letters just inside the horizon
+    [["N",0],["NE",45],["E",90],["SE",135],["S",180],["SW",225],["W",270],["NW",315]].forEach(([t, az]) => {
+      const r = R - 11, th = (az - facing) * D2R;
+      svg.append(sv("text", {x:C + r * Math.sin(th), y:C + r * Math.cos(th) + 4, class:"shDir" + (t.length > 1 ? " sm" : "")}, t));
+    });
+    pts = [];
+    const vis = {};
+    SKY_STARS.forEach(s => {
+      const [alt, az] = skyAltAz(s[2], s[3], J, LAT, LNG);
+      if (alt < 0) return;
+      const [x, y] = proj(alt, az); vis[s[0]] = [x, y];
+      pts.push({s, x, y, alt});
+    });
+    // Constellation lines for the stars already found
+    const lg = sv("g", {class:"shLines"});
+    found.forEach(k => (SKY_LINES[hops[k].lines] || "").split(" ").filter(Boolean).forEach(seg => {
+      const [a, b] = seg.split("-");
+      if (vis[a] && vis[b]) lg.append(sv("line", {x1:vis[a][0], y1:vis[a][1], x2:vis[b][0], y2:vis[b][1]}));
+    }));
+    svg.append(lg);
+    pts.forEach(({s, x, y}) => {
+      const r = Math.max(.9, 3.5 - .8 * s[4]);
+      if (s[4] < 1.6) svg.append(sv("circle", {cx:x, cy:y, r:r * 2.6, fill:"url(#shGlow)"}));
+      svg.append(sv("circle", {cx:x, cy:y, r, fill:"#F4F1FF"}));
+    });
+    // Saturn and Jupiter: labelled so they don't get mistaken for the stars in the clues
+    SKY_PLANETS.forEach(([name, ra, dec, mag]) => {
+      const [alt, az] = skyAltAz(ra, dec, J, LAT, LNG);
+      if (alt < 0) return;
+      const [x, y] = proj(alt, az);
+      svg.append(sv("circle", {cx:x, cy:y, r:Math.max(2.2, 3.4 - .7 * mag), fill:"#FFF1C9"}), sv("text", {x, y:y + 13, class:"shTag"}, name));
+    });
+    const [mra, mdec] = skyMoon(J), [malt, maz] = skyAltAz(mra, mdec, J, LAT, LNG);
+    if (malt > 0){ const [x, y] = proj(malt, maz); svg.append(sv("circle", {cx:x, cy:y, r:7, fill:"#FFF4DE"}), sv("text", {x, y:y + 18, class:"shTag"}, "Moon")); }
+    // Found stars: a pink ring, a name and a letter
+    const placed = [];
+    found.forEach(k => {
+      const t = byKey[hops[k].star], p = vis[t[0]];
+      if (!p) return;
+      svg.append(sv("circle", {cx:p[0], cy:p[1], r:9, class:"shRing"}));
+      const nm = hops[k].label || (t[5] === "ple" ? "the Pleiades" : t[1].replace(/,.*/, ""));
+      const w = nm.length * 5.6, clash = y => placed.some(q => Math.abs(q[0] - p[0]) < (q[2] + w) / 2 + 2 && Math.abs(q[1] - y) < 12);
+      let y = hops[k].below ? p[1] + 21 : p[1] - 13;
+      if (clash(y)) y = y < p[1] ? p[1] + 21 : p[1] - 13;
+      placed.push([p[0], y, w]);
+      svg.append(sv("text", {x:p[0], y, class:"shName"}, nm));
+    });
+    if (n < hops.length && misses >= 3 && vis[target()[0]]){
+      const p = vis[target()[0]], seed = (n * 37) % 11 - 5;
+      svg.append(sv("circle", {cx:p[0] + seed * 2.2, cy:p[1] - seed * 1.6, r:34, class:"shHint"}));
+    }
+    face.textContent = "Facing " + COMPASS16[Math.round(((facing % 360) + 360) % 360 / 22.5) % 16];
+  }
+
+  function showClue(){
+    clueBox.textContent = "";
+    if (n >= hops.length){ wishStep(); return; }
+    const h = hops[n], t = target();
+    clueBox.append(el("p", {class:"shStep"}, "Star " + (n + 1) + " of " + hops.length), el("p", {class:"shText"}, h.clue));
+    const [alt] = skyAltAz(t[2], t[3], J, LAT, LNG);
+    if (alt < 10){   // the Wasatch peaks hide the lowest part of the eastern sky
+      clueBox.append(el("p", {class:"shText shLow"}, alt < 0 ? "This one hasn’t risen yet. Wait a while, or skip it."
+        : "This one is still very low, so it may be hidden behind the mountains or trees. Wait a few minutes, or skip it."));
+      const sk = el("button", {type:"button", class:"cxBtn"}, "Skip this star");
+      sk.addEventListener("click", () => gotIt(true));
+      clueBox.append(sk);
+    }
+  }
+  function gotIt(skipped){
+    const h = hops[n];
+    const slot = tray.querySelectorAll("span")[n];
+    if (slot){ slot.textContent = letters[n] || ""; slot.classList.add("on"); }
+    found.push(n); misses = 0;
+    draw();
+    clueBox.textContent = "";
+    clueBox.append(el("p", {class:"shStep ok"}, skipped ? "Skipped, but here’s your letter." : "You found it! ✨"));
+    if (h.fact) clueBox.append(el("p", {class:"shText"}, h.fact));
+    const nx = el("button", {type:"button", class:"primary"}, n + 1 < hops.length ? "Next star ›" : "One last thing ›");
+    nx.addEventListener("click", () => {
+      n++;
+      if (hops[n] && hops[n].face != null){ facing = hops[n].face; }
+      draw(); showClue();
+      wrap.scrollIntoView({behavior:"smooth", block:"start"});
+    });
+    clueBox.append(nx);
+    if (!skipped) burst(10);
+  }
+  function wishStep(){
+    clueBox.append(el("p", {class:"shStep"}, "Make a wish"), el("p", {class:"shText"}, game.wish));
+    const yes = el("button", {type:"button", class:"primary"}, "I saw one and made a wish 🌠");
+    const no = el("button", {type:"button", class:"ghost"}, "No luck tonight, so I wished on a star");
+    const end = () => {
+      clueBox.textContent = "";
+      clueBox.append(el("p", {class:"lkLead"}, game.lead), el("p", {class:"shBig"}, String(game.message).toUpperCase()));
+      flashMsg(msg, "You read the sky! 💕", "ok");
+      setTimeout(onWin, 2600);
+    };
+    yes.addEventListener("click", end); no.addEventListener("click", end);
+    clueBox.append(yes, no);
+  }
+
+  svg.addEventListener("click", ev => {
+    if (n >= hops.length || found.includes(n)) return;
+    const p = svgPoint(svg, ev);
+    let best = null, bd = 26;
+    pts.forEach(q => { const d = Math.hypot(q.x - p.x, q.y - p.y); if (d < bd){ bd = d; best = q; } });
+    const ripple = sv("circle", {cx:p.x, cy:p.y, r:8, class:"mdMiss"});
+    svg.append(ripple); setTimeout(() => ripple.remove(), 700);
+    if (!best) return;
+    if (sameAs(best.s, target())) gotIt(false);
+    else {
+      misses++;
+      flashMsg(msg, misses >= 3 ? "Not that one. Look for the pink circle." : "Not that one. Read the clue again and check the real sky.", "warn");
+      if (misses === 3) draw();
+    }
+  });
+  bL.addEventListener("click", () => { facing -= 45; draw(); });
+  bR.addEventListener("click", () => { facing += 45; draw(); });
+
+  pick(); draw(); showClue();
+  // Keep the map in step with the turning sky
+  timer = setInterval(() => { if (!document.body.contains(wrap)){ clearInterval(timer); return; } if (live){ pick(); draw(); } }, 60000);
 }
 
 /* Spelling Bee game */
