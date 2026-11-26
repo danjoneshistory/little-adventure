@@ -630,9 +630,7 @@ label.ghost{display:block; text-align:center; color:var(--muted); border:2px das
 .mcScene .mcHalo{opacity:0; transition:opacity .16s ease}
 .mcScene.on .mcDim{opacity:0}
 .mcScene.on .mcHalo{opacity:1}
-.mcBlanks{font-family:"Fredoka", ui-rounded, sans-serif; font-size:1.4rem; letter-spacing:.15em; white-space:pre; margin:.8rem 0 .4rem}
-.mcBtns{display:flex; gap:.6rem; justify-content:center; margin-bottom:.8rem}
-.mcBtns .cxBtn{min-width:7rem}
+.mcBlanks{font-family:"Fredoka", ui-rounded, sans-serif; font-size:1.4rem; letter-spacing:.15em; white-space:pre; margin:.8rem 0 .8rem}
 .mc input[type=text]{text-align:center; letter-spacing:.2em; text-transform:uppercase}
 .ld{margin-top:1rem}
 .ldOne + .ldOne{margin-top:1.4rem; padding-top:1.2rem; border-top:2px dashed var(--line)}
@@ -1865,29 +1863,22 @@ function morse(root, game, onWin){
   const svg = wrap.firstElementChild;
   const blanks = el("p", {class:"mcBlanks", "aria-label": "The message has " + words.map(w => w.length).join(" and ") + " letters"},
     words.map(w => "_ ".repeat(w.length).trim()).join("   "));
-  const bPlay = el("button", {type:"button", class:"cxBtn"}, "Pause");
-  const bSpeed = el("button", {type:"button", class:"cxBtn"}, "Slower");
-  const ctl = el("div", {class:"mcBtns"}); ctl.append(bPlay, bSpeed);
   const inp = el("input", {type:"text", placeholder:"The message", autocomplete:"off", autocapitalize:"characters", spellcheck:"false", "aria-label":"The blinking message"});
   const bGo = el("button", {type:"button", class:"primary"}, "Check message");
   const msg = el("p", {class:"status", role:"status"});
-  wrap.append(blanks, ctl, inp, bGo, msg);
+  wrap.append(blanks, inp, bGo, msg);
   root.append(wrap);
 
-  let unit = 320, k = -1, timer, playing = true, done = false, seen = false;
+  const unit = 340;   // ms per Morse unit; no pause or speed buttons, to keep the blink a secret
+  let k = -1, timer, done = false, seen = false;
   const light = on => svg.classList.toggle("on", on);
   function tick(){
     if (wrap.isConnected) seen = true; else if (seen) return;   // stop once the page moves on
-    if (!playing || done) return;
+    if (done) return;
     k = (k + 1) % seq.length;
     light(seq[k][0]);
     timer = setTimeout(tick, seq[k][1] * unit);
   }
-  bPlay.addEventListener("click", () => {
-    playing = !playing; bPlay.textContent = playing ? "Pause" : "Play";
-    clearTimeout(timer); if (playing){ k = -1; light(false); timer = setTimeout(tick, 1200); } else light(false);
-  });
-  bSpeed.addEventListener("click", () => { unit = unit === 320 ? 560 : 320; bSpeed.textContent = unit === 320 ? "Slower" : "Faster"; });
   const check = () => {
     if (done || !inp.value.trim()) return;
     if (norm(inp.value) === norm(game.message)){
