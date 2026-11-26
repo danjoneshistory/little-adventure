@@ -59,6 +59,14 @@
                   chimney: [x, y of the chimney top, for rising smoke], fire: [x, y of the fire base, for flicker] }
                 Reflection (a drawn mountain lake; the message only shows up upside down in the rippling water):
                 { type: "reflection", message: ["YOU ARE MY", "FAVORITE", "ADVENTURE"] }   (one string per line, up to 3 lines)
+                Mirror lake (spot the difference: 9 things in the water don't match the shore; each gives a letter to unscramble):
+                { type: "mirrordiff", letters: "ADVENTURE", lead: "You are my favorite…" }   (exactly 9 letters)
+                Sunbeam (turn the flat stones to bounce the dawn light over the lily pads in order, ending at the dock):
+                { type: "sunbeam", word: "ADVENTURE", start: row the light comes in on, dock: ["bottom", column] or ["right", row],
+                  rows: [...] }   rows use . water, # rock, f = "/" stone, b = "\" stone, letters = lily pads.
+                  The rows hold the solved stones; each stone starts turned the wrong way. Ask Claude to make a new grid.
+                Half-sunk letters (wooden letter blocks with only their tops above water):
+                { type: "halfsunk", message: ["YOU ARE MY", "FAVORITE", "ADVENTURE"] }   (up to 3 lines)
      choices  - optional: instead of one lat/lng, a list of spots to pick from.
                 Each spot gets its own screen and its own puzzle / answers / prize.
                 They can switch between spots any time; solving any one earns the piece.
@@ -329,8 +337,8 @@ const HUNT = {
             heading: "Picture time!",
             text: "Take a picture of our initials to open your puzzle."
           },
-          puzzle: "Some things are easier to see in the water.",
-          game: { type: "reflection", message: ["YOU ARE MY", "FAVORITE", "ADVENTURE"] } }
+          puzzle: "Some things are easier to see in the water, and some are harder.\n\nThese letters are floating half under the water. What do they say?",
+          game: { type: "halfsunk", message: ["YOU ARE MY", "FAVORITE", "ADVENTURE"] } }
       ],
       piece: "A" },
     { soon: true, name: "Bouldering Project", icon: "climb",    lat: 40.75496, lng: -111.90308, radius: 75,  puzzle: "PUZZLE 1",  answers: ["answer1"],  prize: "PRIZE 1",  piece: "E" },
@@ -635,6 +643,46 @@ label.ghost{display:block; text-align:center; color:var(--muted); border:2px das
 .rfBlanks{display:flex; flex-wrap:wrap; justify-content:center; gap:.2rem 1.1rem; white-space:normal; font-size:1.25rem}
 .rfBlanks span{white-space:pre}
 .rf input[type=text]{text-align:center; letter-spacing:.12em; text-transform:uppercase}
+.lk{margin-top:1rem; text-align:center}
+.lkScene{width:100%; max-width:26rem; margin:0 auto; border-radius:16px; overflow:hidden; line-height:0}
+.lkScene svg{width:100%; height:auto; display:block}
+.lkInfo{color:var(--muted); font-weight:800; margin:.7rem 0 .3rem}
+.lkTray{display:flex; flex-wrap:wrap; justify-content:center; gap:.2rem; min-height:2.3rem; margin:.3rem 0 .6rem}
+.lkTray span{display:inline-flex; align-items:center; justify-content:center; width:1.75rem; height:2.1rem; border-radius:8px; border:2px dashed var(--line);
+  font-family:"Fredoka", ui-rounded, sans-serif; font-weight:600; font-size:1.2rem; color:var(--tile-ink)}
+.lkTray span.on{background:var(--butter); border:2px solid color-mix(in srgb, var(--butter) 70%, #3A2140); animation:pop .4s cubic-bezier(.2,1.4,.4,1) both}
+.lkHint{display:block; margin:0 auto .4rem; padding:.5rem 1.1rem}
+.lkLead{font-family:"Fredoka", ui-rounded, sans-serif; font-weight:600; font-size:1.15rem; margin:.6rem 0 .4rem}
+.lk input[type=text]{text-align:center; letter-spacing:.12em; text-transform:uppercase}
+.mdScene svg{cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent}
+.mdRing{fill:none; stroke:#FF4F8B; stroke-width:2.6; animation:pop .4s cubic-bezier(.2,1.4,.4,1) both; transform-box:fill-box; transform-origin:center}
+.mdLetter circle{fill:#FF4F8B; stroke:#fff; stroke-width:1.5}
+.mdLetter text{fill:#fff; font:600 15px Fredoka, ui-rounded, sans-serif}
+.mdMiss{fill:none; stroke:#fff; stroke-width:2; opacity:.8; animation:mdMiss .7s ease-out forwards; transform-box:fill-box; transform-origin:center}
+@keyframes mdMiss{to{transform:scale(2.2); opacity:0}}
+.mdGlow{fill:#FFF4C2; opacity:0; animation:mdGlow 2.6s ease-in-out forwards}
+@keyframes mdGlow{25%,70%{opacity:.4} 100%{opacity:0}}
+.snCell{fill:#FFFFFF; opacity:.06}
+.snStone{cursor:pointer; outline:none; -webkit-tap-highlight-color:transparent}
+.snSpin{transform-box:fill-box; transform-origin:center; transition:transform .28s cubic-bezier(.3,1.4,.5,1)}
+.snSlate{fill:#C3CBCE; stroke:#6F7D83; stroke-width:1.5}
+.snShine{fill:#FFFFFF; opacity:.6}
+.snStone:focus-visible .snSlate{stroke:#FF4F8B; stroke-width:3}
+.snRock{fill:#55615F; stroke:#3C4644; stroke-width:1.5}
+.snPad path{fill:#5E9C62; stroke:#3F7445; stroke-width:1.2; transition:fill .25s}
+.snPad text{fill:#F4FFF2; font:600 17px Fredoka, ui-rounded, sans-serif; transition:fill .25s}
+.snPad.lit path{fill:#FFD86B; stroke:#D9A93A}
+.snPad.lit text{fill:#3A2140}
+.snBeamCore{fill:none; stroke:#FFF6CF; stroke-width:3.5; stroke-linejoin:round; stroke-linecap:round}
+.snBeamGlow{fill:none; stroke:#FFD36B; stroke-width:12; stroke-linejoin:round; stroke-linecap:round; opacity:.55}
+.snDockHeart path{fill:#6E4A2C; transition:fill .4s}
+.snScene svg.won .snDockHeart path{fill:#FF4F8B}
+.snScene svg.won .snBeamGlow{animation:snWin 1.2s ease-in-out infinite}
+@keyframes snWin{50%{opacity:.95; stroke-width:18}}
+.hsBob{animation:hsBob 4.2s ease-in-out infinite}
+@keyframes hsBob{50%{transform:translateY(1.6px)}}
+.lk.calm .hsBob{animation:none}
+@media (prefers-reduced-motion: reduce){ .hsBob, .mdRing, .lkTray span.on{animation:none} .snSpin{transition:none} }
 .ld{margin-top:1rem}
 .ldOne + .ldOne{margin-top:1.4rem; padding-top:1.2rem; border-top:2px dashed var(--line)}
 .ldTitle{font-family:"Fredoka", ui-rounded, sans-serif; font-weight:700; text-align:center; color:var(--muted); margin:0 0 .5rem}
@@ -1322,7 +1370,7 @@ function renderPlace(app, i){
   const card = el("section", {class:"card" + (flash === "arrive" ? " reveal" : "")});
   card.append(el("h2", {}, "Your puzzle"));
   card.append(el("p", {class:"text"}, e.puzzle));
-  const GAMES = {connections, strands, crossword, spellingbee, wordle, ladder, morse, reflection};
+  const GAMES = {connections, strands, crossword, spellingbee, wordle, ladder, morse, reflection, mirrordiff, sunbeam, halfsunk};
   if (!solved && e.game && GAMES[e.game.type]){
     GAMES[e.game.type](card, e.game, () => solve(i, c));
     if (TEST){
@@ -2040,6 +2088,374 @@ function reflection(root, game, onWin){
   };
   bGo.addEventListener("click", check);
   inp.addEventListener("keydown", ev => { if (ev.key === "Enter") check(); });
+}
+
+/* Shared pieces for the lake games: mountains + pines, and sky / water / ripple defs.
+   p is an id prefix so two lakes can share a page. */
+function lakePine(x, base, h, fill){
+  const w = h * .34; let d = "";
+  for (let t = 0; t < 4; t++){
+    const top = base - h + t * h * .2, bot = top + h * .42, ww = w * (.45 + t * .2);
+    d += `M${x} ${top}L${x + ww} ${bot}L${x - ww} ${bot}Z`;
+  }
+  return `<path d="${d}" fill="${fill}"/><rect x="${x - 1.2}" y="${base - h * .12}" width="2.4" height="${h * .12}" fill="#2A2B22"/>`;
+}
+function lakeDefs(p, W, H, S, ripple){
+  return `
+    <linearGradient id="${p}Sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9EC3DA"/><stop offset=".7" stop-color="#F2D9BD"/><stop offset="1" stop-color="#F7E6CF"/>
+    </linearGradient>
+    <linearGradient id="${p}Water" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8FAFBC"/><stop offset=".45" stop-color="#4F7A89"/><stop offset="1" stop-color="#244653"/>
+    </linearGradient>
+    <clipPath id="${p}WaterClip"><rect x="0" y="${S}" width="${W}" height="${H - S}"/></clipPath>
+    <filter id="${p}Ripple" filterUnits="userSpaceOnUse" x="-20" y="${S - 20}" width="${W + 40}" height="${H - S + 40}" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency=".008 .07" numOctaves="2" seed="5" result="n">
+        <animate attributeName="baseFrequency" dur="8s" values=".008 .07; .01 .085; .008 .07" repeatCount="indefinite"/>
+      </feTurbulence>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="${ripple}" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>`;
+}
+function lakeSvg(svgHtml, label){
+  const scene = el("div", {class:"lkScene"});
+  scene.innerHTML = svgHtml;
+  const svg = scene.querySelector("svg");
+  svg.setAttribute("role", "img"); svg.setAttribute("aria-label", label);
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) svg.querySelectorAll("animate").forEach(a => a.remove());
+  return scene;
+}
+function svgPoint(svg, ev){
+  const pt = svg.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  return pt.matrixTransform(svg.getScreenCTM().inverse());
+}
+const SVGNS = "http://www.w3.org/2000/svg";
+function sv(tag, attrs = {}, text){
+  const n = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  if (text != null) n.textContent = text;
+  return n;
+}
+function answerBox(wrap, lead, placeholder, answer, onRight){
+  const row = el("div", {class:"lkAnswer"});
+  if (lead) row.append(el("p", {class:"lkLead"}, lead));
+  const inp = el("input", {type:"text", placeholder, autocomplete:"off", autocapitalize:"characters", spellcheck:"false", "aria-label": placeholder});
+  const bGo = el("button", {type:"button", class:"primary"}, "Check");
+  const msg = el("p", {class:"status", role:"status"});
+  row.append(inp, bGo, msg);
+  wrap.append(row);
+  let done = false;
+  const check = () => {
+    if (done || !inp.value.trim()) return;
+    if (norm(inp.value) === norm(answer)){ done = true; inp.disabled = bGo.disabled = true; onRight(msg); }
+    else flashMsg(msg, "Not quite. Look again.", "warn");
+  };
+  bGo.addEventListener("click", check);
+  inp.addEventListener("keydown", ev => { if (ev.key === "Enter") check(); });
+}
+
+/* Mirror lake (spot the difference): the water is almost a perfect mirror of the shore,
+   but nine things don't match. Each difference found gives a letter; unscramble them. */
+function mirrordiff(root, game, onWin){
+  const letters = String(game.letters || "ADVENTURE").toUpperCase().split("");
+  const W = 360, H = 480, S = 222, p = "md";
+  // Where each difference sits on the shore. Its twin in the water is at (x, 2S - y).
+  const DIFFS = [
+    {x:292, y:62,  what:"The sun is a moon in the water"},
+    {x:150, y:82,  what:"An extra cloud in the water"},
+    {x:214, y:68,  what:"The big peak has no snow in the water"},
+    {x:134, y:180, what:"The swing is gone in the water"},
+    {x:193, y:212, what:"The canoe points the other way"},
+    {x:255, y:205, what:"The cabin window is dark in the water"},
+    {x:85,  y:192, what:"The hat is pink in the water"},
+    {x:172, y:156, what:"A lone pine on the ridge, only in the water"},
+    {x:276, y:158, what:"No smoke from the chimney in the water"}
+  ].slice(0, letters.length);
+
+  const cloud = (x, y, s) => `<g fill="#FFFFFF" opacity=".8"><ellipse cx="${x}" cy="${y}" rx="${18 * s}" ry="${7 * s}"/>
+    <ellipse cx="${x - 10 * s}" cy="${y - 4 * s}" rx="${9 * s}" ry="${7 * s}"/><ellipse cx="${x + 6 * s}" cy="${y - 6 * s}" rx="${10 * s}" ry="${8 * s}"/></g>`;
+  const bird = (x, y) => `<path d="M${x - 6} ${y} q3 -4 6 0 q3 -4 6 0" fill="none" stroke="#4E5160" stroke-width="1.6" stroke-linecap="round"/>`;
+  let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  let far = "";
+  for (let x = -6; x < W + 10; x += 9 + rnd() * 7) far += lakePine(x, S - 2 + rnd() * 3, 22 + rnd() * 16, "#3F5E50");
+  const near = [[14, 120], [44, 86], [302, 70], [332, 104], [354, 132]].map(([x, h]) => lakePine(x, S + 4, h, "#22382E")).join("");
+  // w = true draws the water's version, with all the differences
+  const upper = w => `
+    ${w ? `<path d="M292 47 a15 15 0 1 0 0 30 a19 19 0 1 1 0 -30Z" fill="#FFF4DE" opacity=".95"/>`
+        : `<circle cx="292" cy="62" r="15" fill="#FFF4DE" opacity=".85"/>`}
+    ${cloud(100, 54, 1)}${cloud(206, 28, .8)}${w ? cloud(150, 84, .7) : ""}
+    ${bird(24, 30)}${bird(42, 22)}
+    <path d="M0 150 L38 118 L70 128 L112 82 L150 104 L178 92 L214 58 L250 96 L286 84 L322 116 L360 104 L360 ${S} L0 ${S}Z" fill="#9FB2BC"/>
+    ${w ? "" : `<path d="M214 58 L236 82 L226 88 L214 76 L200 80Z" fill="#F4F6F4" opacity=".9"/>`}
+    <path d="M112 82 L126 96 L116 98Z" fill="#F4F6F4" opacity=".9"/>
+    <path d="M0 176 L54 150 L98 166 L140 146 L196 170 L246 150 L300 168 L360 154 L360 ${S} L0 ${S}Z" fill="#7F949C"/>
+    ${w ? lakePine(172, 167, 20, "#3F5E50") : ""}
+    ${far}
+    <rect x="0" y="${S - 6}" width="${W}" height="6" fill="#B8A88A"/>
+    <rect x="105" y="150" width="6" height="${S - 150}" fill="#4A3A2A"/>
+    <path d="M110 162 L146 155" stroke="#4A3A2A" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="108" cy="140" r="22" fill="#2F4A36"/><circle cx="92" cy="152" r="14" fill="#2F4A36"/><circle cx="124" cy="150" r="14" fill="#2F4A36"/>
+    ${w ? "" : `<path d="M128 159 V196 M140 157 V196" stroke="#D8C7A4" stroke-width="1.2"/><rect x="124" y="195" width="20" height="4" rx="1" fill="#8B5A2B"/>`}
+    <g ${w ? `transform="translate(386 0) scale(-1 1)"` : ""}>
+      <path d="M166 210 L208 212 L222 202 Q216 220 192 220 Q172 220 166 210Z" fill="#C8553D"/>
+      <path d="M170 211 L208 212.5" stroke="#F1D2B3" stroke-width="1.4"/>
+    </g>
+    <rect x="272" y="172" width="7" height="18" fill="#5A3B2C"/>
+    ${w ? "" : `<g fill="#E8E6E2" opacity=".85"><circle cx="276" cy="164" r="4.5"/><circle cx="280" cy="155" r="5.5"/><circle cx="276" cy="145" r="6.5"/></g>`}
+    <path d="M232 197 L259 173 L286 197Z" fill="#4B2E22"/>
+    <rect x="238" y="195" width="42" height="${S - 195}" fill="#7A4E33"/>
+    <rect x="266" y="205" width="8" height="${S - 205}" fill="#4B2E22"/>
+    <rect x="250" y="200" width="11" height="10" fill="${w ? "#3A2A22" : "#FFD36B"}"/>
+    <rect x="82" y="196" width="5" height="${S - 196}" fill="#6B5440"/>
+    <ellipse cx="84.5" cy="195" rx="11" ry="2.6" fill="${w ? "#E26D9A" : "#8B5A2B"}"/>
+    <path d="M78 195 Q78 186 84.5 186 Q91 186 91 195Z" fill="${w ? "#E26D9A" : "#8B5A2B"}"/>
+    ${near}`;
+
+  const wrap = el("div", {class:"lk"});
+  const scene = lakeSvg(`
+    <svg viewBox="0 0 ${W} ${H}">
+      <defs>${lakeDefs(p, W, H, S, 5)}</defs>
+      <rect width="${W}" height="${S}" fill="url(#${p}Sky)"/>
+      ${upper(false)}
+      <rect y="${S}" width="${W}" height="${H - S}" fill="url(#${p}Water)"/>
+      <g clip-path="url(#${p}WaterClip)"><g filter="url(#${p}Ripple)" opacity=".62">
+        <g transform="translate(0 ${2 * S}) scale(1 -1)">${upper(true)}</g>
+      </g></g>
+      <rect y="${S}" width="${W}" height="2" fill="#E9EFE6" opacity=".4"/>
+      <g class="mdMarks"></g>
+    </svg>`, "A mountain lake and its reflection. Nine things in the water don't match the shore. Tap them.");
+  scene.classList.add("mdScene");
+  const svg = scene.querySelector("svg"), marks = svg.querySelector(".mdMarks");
+  const tray = el("div", {class:"lkTray", "aria-label":"Letters found"});
+  const slots = letters.map(() => tray.appendChild(el("span", {}, "")));
+  const info = el("p", {class:"lkInfo"}, "Found 0 of " + DIFFS.length);
+  const bHint = el("button", {type:"button", class:"cxBtn lkHint"}, "Hint (3 left)");
+  wrap.append(scene, info, tray, bHint);
+  root.append(wrap);
+
+  const found = new Set(); let hints = 3, over = false;
+  const ring = (x, y, cls, r) => marks.append(sv("circle", {cx:x, cy:y, r, class:cls}));
+  function hit(k){
+    found.add(k);
+    const d = DIFFS[k], wy = 2 * S - d.y;
+    ring(d.x, d.y, "mdRing", 17); ring(d.x, wy, "mdRing", 17);
+    const bx = Math.min(W - 13, d.x + 17), by = Math.max(S + 13, wy - 17);
+    const g = sv("g", {class:"mdLetter"});
+    g.append(sv("circle", {cx:bx, cy:by, r:12}), sv("text", {x:bx, y:by + 5.5, "text-anchor":"middle"}, letters[k]));
+    marks.append(g);
+    slots[found.size - 1].textContent = letters[k]; slots[found.size - 1].classList.add("on");
+    info.textContent = found.size === DIFFS.length ? "All " + DIFFS.length + " found! Now unscramble them." : "Found " + found.size + " of " + DIFFS.length;
+    if (found.size === DIFFS.length) bHint.hidden = true;
+  }
+  svg.addEventListener("click", ev => {
+    if (over) return;
+    const {x, y} = svgPoint(svg, ev);
+    const k = DIFFS.findIndex((d, i) => !found.has(i) && Math.hypot(d.x - x, Math.min(Math.abs(d.y - y), Math.abs(2 * S - d.y - y))) < 21);
+    if (k >= 0) hit(k);
+    else { const m = sv("circle", {cx:x, cy:y, r:10, class:"mdMiss"}); marks.append(m); setTimeout(() => m.remove(), 700); }
+  });
+  bHint.addEventListener("click", () => {
+    const left = DIFFS.map((d, i) => i).filter(i => !found.has(i));
+    if (!left.length || !hints) return;
+    const d = DIFFS[left[Math.floor(Math.random() * left.length)]];
+    const g = sv("circle", {cx: d.x + (Math.random() * 20 - 10), cy: 2 * S - d.y + (Math.random() * 20 - 10), r:38, class:"mdGlow"});
+    marks.prepend(g); setTimeout(() => g.remove(), 2600);
+    hints--; bHint.textContent = hints ? "Hint (" + hints + " left)" : "No hints left"; bHint.disabled = !hints;
+  });
+  answerBox(wrap, game.lead || "", "Your answer", letters.join(""), msg => {
+    over = true; wrap.classList.add("calm");
+    flashMsg(msg, (game.lead ? game.lead + " " : "") + letters.join("").toLowerCase() + "! 💕", "ok");
+    setTimeout(onWin, 1800);
+  });
+}
+
+/* Sunbeam: tap the flat stones to turn them. Each stone bounces the dawn light.
+   Light the lily pads in the right order and bring the beam to the dock. */
+function sunbeam(root, game, onWin){
+  const rows = game.rows, R = rows.length, C = rows[0].length, word = game.word.toUpperCase();
+  const CELL = 48, X0 = 36, Y0 = 92, W = 360, H = Y0 + R * CELL + 50;
+  const [dockSide, dockAt] = game.dock;   // ["bottom", column] or ["right", row]
+  const stones = new Map(), pads = new Map(), rocks = new Set();
+  rows.forEach((row, r) => [...row].forEach((ch, c) => {
+    const k = r * C + c;
+    // the rows hold the solution; every stone starts turned the wrong way
+    if (ch === "f" || ch === "b") stones.set(k, {r, c, v: ch === "f" ? 1 : 0, a0: ch === "f" ? 45 : -45, turns: 0});
+    else if (ch === "#") rocks.add(k);
+    else if (ch !== ".") pads.set(k, ch.toUpperCase());
+  }));
+  const cx = c => X0 + c * CELL + CELL / 2, cy = r => Y0 + r * CELL + CELL / 2;
+  const STEP = {E:[0, 1], W:[0, -1], N:[-1, 0], S:[1, 0]};
+  const FWD = {E:"N", N:"E", W:"S", S:"W"}, BCK = {E:"S", S:"E", W:"N", N:"W"};   // "/" and "\"
+
+  function trace(){
+    let r = game.start, c = 0, d = "E";
+    const pts = [[X0 - 12, cy(r)]], lit = [], litCells = new Set();
+    for (let n = 0; n < 200; n++){
+      if (r < 0 || r >= R || c < 0 || c >= C){
+        const [dr, dc] = STEP[d];
+        pts.push([cx(c - dc) + dc * (CELL / 2 + 16), cy(r - dr) + dr * (CELL / 2 + 16)]);
+        const ok = dockSide === "bottom" ? r === R && c === dockAt : c === C && r === dockAt;
+        return {pts, lit, litCells, end: ok ? "dock" : "off"};
+      }
+      const k = r * C + c;
+      if (rocks.has(k)){
+        const [dr, dc] = STEP[d];
+        pts.push([cx(c) - dc * 14, cy(r) - dr * 14]);
+        return {pts, lit, litCells, end: "rock"};
+      }
+      if (pads.has(k) && !litCells.has(k)){ litCells.add(k); lit.push(pads.get(k)); }
+      const s = stones.get(k);
+      if (s){ pts.push([cx(c), cy(r)]); d = (s.v === 0 ? FWD : BCK)[d]; }
+      const [dr, dc] = STEP[d]; r += dr; c += dc;
+    }
+    return {pts, lit, litCells, end: "off"};
+  }
+
+  let grid = "";
+  for (let r = 0; r < R; r++) for (let c = 0; c < C; c++)
+    grid += `<rect x="${X0 + c * CELL + 1}" y="${Y0 + r * CELL + 1}" width="${CELL - 2}" height="${CELL - 2}" rx="8" class="snCell"/>`;
+  const dx = dockSide === "bottom" ? cx(dockAt) : X0 + C * CELL + 18, dy = dockSide === "bottom" ? Y0 + R * CELL + 22 : cy(dockAt);
+  const dock = dockSide === "bottom"
+    ? `<rect x="${dx - 15}" y="${Y0 + R * CELL + 4}" width="30" height="${H - Y0 - R * CELL}" fill="#9C6B43"/>
+       ${[0, 1, 2, 3].map(i => `<rect x="${dx - 15}" y="${Y0 + R * CELL + 6 + i * 11}" width="30" height="2" fill="#6E4A2C"/>`).join("")}`
+    : `<rect x="${dx - 14}" y="${dy - 15}" width="${W - dx + 14}" height="30" fill="#9C6B43"/>`;
+  let seed = 3; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  let far = "";
+  for (let x = -6; x < W + 10; x += 9 + rnd() * 7) far += lakePine(x, 64 + rnd() * 3, 18 + rnd() * 12, "#3F5E50");
+  const wrap = el("div", {class:"lk"});
+  const scene = lakeSvg(`
+    <svg viewBox="0 0 ${W} ${H}">
+      <defs>
+        ${lakeDefs("sn", W, H, 66, 0)}
+        <radialGradient id="snSun"><stop offset="0" stop-color="#FFF6D6"/><stop offset=".45" stop-color="#FFD36B"/><stop offset="1" stop-color="#FFD36B" stop-opacity="0"/></radialGradient>
+        <filter id="snGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4"/></filter>
+      </defs>
+      <rect width="${W}" height="66" fill="url(#snSky)"/>
+      <path d="M0 48 L40 30 L80 40 L130 14 L170 34 L210 20 L250 38 L300 18 L360 36 L360 66 L0 66Z" fill="#9FB2BC"/>
+      ${far}
+      <rect y="66" width="${W}" height="${H - 66}" fill="url(#snWater)"/>
+      <path d="M0 66 H${X0 - 6} V${H} H0Z" fill="#7C8A6A"/>
+      <path d="M${X0 - 6} 66 Q${X0} ${H / 2} ${X0 - 6} ${H}" fill="none" stroke="#B8A88A" stroke-width="5"/>
+      ${grid}
+      ${dock}
+      <g class="snDockHeart" transform="translate(${dx} ${dy})"><path d="M0 6 C-12 -3 -7 -12 0 -6 C7 -12 12 -3 0 6Z"/></g>
+      <g class="snBeam"><polyline class="snBeamGlow" filter="url(#snGlow)"/><polyline class="snBeamCore"/></g>
+      <g class="snPads"></g>
+      <g class="snStones"></g>
+      <circle cx="${X0 - 14}" cy="${cy(game.start)}" r="26" fill="url(#snSun)"/>
+      <circle cx="${X0 - 14}" cy="${cy(game.start)}" r="10" fill="#FFF1B8"/>
+    </svg>`, "A lake grid with a rising sun on the west shore, flat stones that turn, and lily pads with letters.");
+  scene.classList.add("snScene");
+  const svg = scene.querySelector("svg");
+  const gPads = svg.querySelector(".snPads"), gStones = svg.querySelector(".snStones");
+  const beamEls = svg.querySelectorAll(".snBeam polyline");
+  const padEls = new Map();
+  pads.forEach((ch, k) => {
+    const r = Math.floor(k / C), c = k % C;
+    const g = sv("g", {class:"snPad"});
+    g.append(sv("path", {d:`M${cx(c)} ${cy(r)} L${cx(c) + 17} ${cy(r)} A17 17 0 1 1 ${cx(c) + 15.4} ${cy(r) - 7.2} Z`}),
+             sv("text", {x:cx(c), y:cy(r) + 6, "text-anchor":"middle"}, ch));
+    gPads.append(g); padEls.set(k, g);
+  });
+  rocks.forEach(k => {
+    const r = Math.floor(k / C), c = k % C, x = cx(c), y = cy(r);
+    gStones.append(sv("path", {class:"snRock", d:`M${x - 17} ${y + 8} Q${x - 19} ${y - 9} ${x - 4} ${y - 15} Q${x + 14} ${y - 17} ${x + 18} ${y} Q${x + 19} ${y + 13} ${x} ${y + 14} Q${x - 13} ${y + 15} ${x - 17} ${y + 8}Z`}));
+  });
+  stones.forEach((s, k) => {
+    const g = sv("g", {class:"snStone", tabindex:"0", role:"button", "aria-label":`Stone in row ${s.r + 1}, column ${s.c + 1}. Tap to turn it.`});
+    g.append(sv("rect", {x:cx(s.c) - CELL / 2, y:cy(s.r) - CELL / 2, width:CELL, height:CELL, fill:"transparent"}));
+    const spin = sv("g", {class:"snSpin"});
+    spin.append(sv("ellipse", {cx:cx(s.c), cy:cy(s.r), rx:21, ry:6, class:"snSlate"}),
+                sv("ellipse", {cx:cx(s.c) - 3, cy:cy(s.r) - 1.5, rx:12, ry:1.6, class:"snShine"}));
+    g.append(spin); gStones.append(g); s.spin = spin;
+    const turn = () => { if (over) return; s.v ^= 1; s.turns++; draw(); };
+    g.addEventListener("click", turn);
+    g.addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); turn(); } });
+  });
+  const tray = el("div", {class:"lkTray", "aria-live":"polite"});
+  const info = el("p", {class:"lkInfo"});
+  const msg = el("p", {class:"status", role:"status"});
+  wrap.append(scene, info, tray, msg);
+  root.append(wrap);
+
+  let over = false;
+  function draw(){
+    stones.forEach(s => { s.spin.style.transform = `rotate(${s.a0 + s.turns * 90}deg)`; });
+    const t = trace();
+    const pts = t.pts.map(p => p.join(",")).join(" ");
+    beamEls.forEach(b => b.setAttribute("points", pts));
+    padEls.forEach((g, k) => g.classList.toggle("lit", t.litCells.has(k)));
+    tray.textContent = "";
+    t.lit.forEach(ch => tray.append(el("span", {class:"on"}, ch)));
+    if (!t.lit.length) tray.append(el("span", {}, ""));
+    info.textContent = t.end === "rock" ? "The light is stuck on a rock." : t.end === "off" ? "The light slips off the lake." : "The light reaches the dock…";
+    if (t.end === "dock" && t.lit.join("") === word){
+      over = true; wrap.classList.add("calm"); svg.classList.add("won");
+      info.textContent = "The light reaches the dock!";
+      flashMsg(msg, (game.lead ? game.lead + " " : "") + word.toLowerCase() + "! 💕", "ok");
+      setTimeout(onWin, 2200);
+    } else if (t.end === "dock") info.textContent = "The light reaches the dock, but the letters aren’t right yet.";
+  }
+  draw();
+}
+
+/* Half-sunk letters: wooden letter blocks floating in the lake, cut in half by the water.
+   You only see the tops and their reflections, which can fool you (P or R? E or F?). */
+function halfsunk(root, game, onWin){
+  const lines = [].concat(game.message).map(l => String(l).toUpperCase());
+  const W = 360, H = 480, S = 196, p = "hs";
+  const LY = [282, 362, 442], FS = [27, 31, 34];
+  let seed = 11; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  let far = "";
+  for (let x = -6; x < W + 10; x += 9 + rnd() * 7) far += lakePine(x, S - 2 + rnd() * 3, 20 + rnd() * 14, "#3F5E50");
+  let above = "", below = "", clips = "", n = 0;
+  lines.forEach((line, k) => {
+    const f = FS[k + 3 - lines.length] || 30, y = LY[k + 3 - lines.length];
+    const bw = f * .92, bh = f * 1.25, gap = 3;
+    const width = [...line].reduce((a, ch) => a + (ch === " " ? bw * .6 : bw + gap), -gap);
+    let x = (W - width) / 2, blocks = "";
+    const top = y - .1 * f - bh / 2;
+    [...line].forEach(ch => {
+      if (ch === " "){ x += bw * .6; return; }
+      blocks += `<g class="hsBob" style="animation-delay:${(-rnd() * 4).toFixed(2)}s">
+        <rect x="${x}" y="${top}" width="${bw}" height="${bh}" rx="4" fill="url(#hsWood)" stroke="#7A5230" stroke-width="1.2"/>
+        <text x="${x + bw / 2}" y="${top + bh / 2 + .29 * f}" text-anchor="middle" font-family="Fredoka, ui-rounded, sans-serif"
+              font-weight="600" font-size="${f * .82}" fill="#4A2D17">${ch}</text></g>`;
+      x += bw + gap; n++;
+    });
+    clips += `<clipPath id="hsUp${k}"><rect x="0" y="0" width="${W}" height="${y}"/></clipPath>
+              <clipPath id="hsDown${k}"><rect x="0" y="${y}" width="${W}" height="${H - y}"/></clipPath>`;
+    above += `<g clip-path="url(#hsUp${k})">${blocks}</g>
+      <rect x="${(W - width) / 2 - 8}" y="${y - .6}" width="${width + 16}" height="1.4" fill="#E9EFE6" opacity=".45"/>`;
+    below += `<g clip-path="url(#hsDown${k})"><g filter="url(#hsRipple)" opacity=".5">
+      <g transform="translate(0 ${2 * y}) scale(1 -1)">${blocks}</g></g></g>`;
+  });
+  const wrap = el("div", {class:"lk"});
+  const scene = lakeSvg(`
+    <svg viewBox="0 0 ${W} ${H}">
+      <defs>
+        ${lakeDefs(p, W, H, S, 4)}
+        <linearGradient id="hsWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D9AE78"/><stop offset="1" stop-color="#B07E48"/></linearGradient>
+        ${clips}
+      </defs>
+      <rect width="${W}" height="${S}" fill="url(#hsSky)"/>
+      <circle cx="292" cy="56" r="14" fill="#FFF4DE" opacity=".85"/>
+      <path d="M0 130 L38 100 L70 110 L112 66 L150 88 L178 76 L214 44 L250 80 L286 68 L322 98 L360 88 L360 ${S} L0 ${S}Z" fill="#9FB2BC"/>
+      <path d="M214 44 L236 68 L226 74 L214 62 L200 66Z" fill="#F4F6F4" opacity=".9"/>
+      <path d="M0 156 L54 132 L98 146 L140 128 L196 150 L246 132 L300 148 L360 136 L360 ${S} L0 ${S}Z" fill="#7F949C"/>
+      ${far}
+      <rect y="${S}" width="${W}" height="${H - S}" fill="url(#${p}Water)"/>
+      ${below}
+      ${above}
+    </svg>`, "Wooden letter blocks floating in a lake. Only the top half of each letter is above the water.");
+  const blanks = el("p", {class:"mcBlanks rfBlanks"});
+  lines.join(" ").split(/\s+/).filter(Boolean).forEach(w => blanks.append(el("span", {"aria-hidden":"true"}, "_ ".repeat(w.length).trim())));
+  wrap.append(scene, blanks);
+  root.append(wrap);
+  answerBox(wrap, "", "Your answer", lines.join(""), msg => {
+    wrap.classList.add("calm");
+    flashMsg(msg, "You read the water! 💕", "ok");
+    setTimeout(onWin, 1600);
+  });
 }
 
 /* Spelling Bee game */
