@@ -55,7 +55,8 @@
                 Each rung changes one letter of the word before it.
                 Morse lantern (one window in a photo softly blinks the message; the sign is the only hint):
                 { type: "morse", message: "MISS YOU", sign: "MORSE CABIN", image: "images/cabin.jpg",
-                  size: [photo width, height], window: [x, y, width, height of the window], signAt: [x, y] }
+                  size: [photo width, height], window: [x, y, width, height of the window], signAt: [x, y],
+                  chimney: [x, y of the chimney top, for rising smoke], fire: [x, y of the fire base, for flicker] }
      choices  - optional: instead of one lat/lng, a list of spots to pick from.
                 Each spot gets its own screen and its own puzzle / answers / prize.
                 They can switch between spots any time; solving any one earns the piece.
@@ -304,7 +305,8 @@ const HUNT = {
           },
           puzzle: "What’s the secret message?",
           game: { type: "morse", message: "MISS YOU", sign: "MORSE CABIN",
-                  image: "images/cabin.jpg", size: [890, 1188], window: [311, 420, 47, 56], signAt: [118, 800] } },
+                  image: "images/cabin.jpg", size: [890, 1188], window: [311, 420, 47, 56], signAt: [118, 800],
+                  chimney: [628, 296], fire: [717, 838] } },
         { name: "Pinecrest Lake",         icon: "lake",         lat: 38.19600, lng: -119.99300, radius: 1000,
           about: "A mountain lake ringed by pines and granite, with a trail that loops all the way around it (about 4 miles).",
           quote: { text: "“A lake is the landscape’s most beautiful and expressive feature. It is earth’s eye; looking into which the beholder measures the depth of his own nature.”",
@@ -629,6 +631,17 @@ label.ghost{display:block; text-align:center; color:var(--muted); border:2px das
 .mcScene .mcDim{opacity:.8; transition:opacity .16s ease}
 .mcScene .mcHalo{opacity:0; transition:opacity .16s ease}
 .mcScene.on .mcDim{opacity:0}
+.mcScene .mcSway{transform-box:view-box; animation:mcSway 7s ease-in-out infinite alternate}
+@keyframes mcSway{from{transform:skewX(-2.5deg) scaleY(1)} to{transform:skewX(2.5deg) scaleY(1.04)}}
+.mcScene .mcPuffDot{transform-box:fill-box; transform-origin:center; opacity:0; animation:mcPuff 7.5s linear infinite}
+@keyframes mcPuff{0%{transform:translate(0,0) scale(.5); opacity:0} 15%{opacity:.7} 100%{transform:translate(-34px,-190px) scale(3.4); opacity:0}}
+.mcScene .mcFlick{transform-box:view-box; animation:mcFlick 1.3s ease-in-out infinite}
+@keyframes mcFlick{0%{transform:scale(1.02,1.04) skewX(0)} 18%{transform:scale(1,1.12) skewX(-3deg)} 37%{transform:scale(1.03,1.03) skewX(2deg)} 55%{transform:scale(1,1.15) skewX(-1deg)} 74%{transform:scale(1.02,1.06) skewX(3deg)} 100%{transform:scale(1.02,1.04) skewX(0)}}
+.mcScene .mcGlowPulse{mix-blend-mode:screen; animation:mcGlow 2.1s ease-in-out infinite}
+@keyframes mcGlow{0%,100%{opacity:.55} 23%{opacity:.8} 41%{opacity:.5} 63%{opacity:.9} 82%{opacity:.6}}
+.mcScene .mcSpark{transform-box:fill-box; opacity:0; animation:mcSpark 3.1s ease-out infinite}
+@keyframes mcSpark{0%{transform:translate(0,0); opacity:0} 10%{opacity:1} 100%{transform:translate(var(--dx),-120px); opacity:0}}
+@media (prefers-reduced-motion: reduce){ .mcScene .mcSway, .mcScene .mcPuffDot, .mcScene .mcFlick, .mcScene .mcGlowPulse, .mcScene .mcSpark{animation:none} }
 .mcScene.on .mcHalo{opacity:1}
 .mcBlanks{font-family:"Fredoka", ui-rounded, sans-serif; font-size:1.4rem; letter-spacing:.15em; white-space:pre; margin:.8rem 0 .8rem}
 .mc input[type=text]{text-align:center; letter-spacing:.2em; text-transform:uppercase}
@@ -1834,6 +1847,7 @@ function morse(root, game, onWin){
   });
   const sign = (game.sign || "MORSE CABIN").toUpperCase().split(/\s+/);
   const [W, H] = game.size, [wx, wy, ww, wh] = game.window, [sx, sy] = game.signAt || [118, 800];
+  const [cx, cy] = game.chimney || [628, 296], [fx, fy] = game.fire || [717, 838];
   const wrap = el("div", {class:"mc"});
   // The photo, with one window that softly dims and brightens, and a weathered sign out front.
   wrap.innerHTML = `<div class="mcScene" role="img" aria-label="A log cabin in the rainy woods at night. A wooden sign out front reads ${sign.join(" ")}.">
@@ -1841,22 +1855,60 @@ function morse(root, game, onWin){
     <svg viewBox="0 0 ${W} ${H}" aria-hidden="true">
       <defs>
         <filter id="mcSoft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="2.5"/></filter>
+        <filter id="mcFeather" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>
+        <filter id="mcPuff" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="7"/></filter>
         <radialGradient id="mcHalo"><stop offset="0" stop-color="#FFC979" stop-opacity=".55"/><stop offset="1" stop-color="#FFC979" stop-opacity="0"/></radialGradient>
-        <linearGradient id="mcWood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5A4532"/><stop offset=".55" stop-color="#46342A"/><stop offset="1" stop-color="#2C2019"/></linearGradient>
-        <linearGradient id="mcFire" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#FF9A3C" stop-opacity=".22"/><stop offset="1" stop-color="#FF9A3C" stop-opacity="0"/></linearGradient>
+        <radialGradient id="mcGlow"><stop offset="0" stop-color="#FF9B3D" stop-opacity=".55"/><stop offset=".5" stop-color="#FF7A1F" stop-opacity=".18"/><stop offset="1" stop-color="#FF7A1F" stop-opacity="0"/></radialGradient>
+        <radialGradient id="mcSmoke"><stop offset="0" stop-color="#C9CED2" stop-opacity=".55"/><stop offset="1" stop-color="#C9CED2" stop-opacity="0"/></radialGradient>
+        <mask id="mcSmokeMask" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}">
+          <ellipse cx="${cx - 10}" cy="${cy - 100}" rx="62" ry="110" fill="#fff" filter="url(#mcFeather)"/></mask>
+        <mask id="mcFlameMask" maskUnits="userSpaceOnUse" x="0" y="0" width="${W}" height="${H}">
+          <ellipse cx="${fx}" cy="${fy - 34}" rx="38" ry="52" fill="#fff" filter="url(#mcFeather)"/></mask>
+        <!-- A weathered, rain-darkened board with carved, worn letters -->
+        <filter id="mcGrain" color-interpolation-filters="sRGB" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency=".012 .42" numOctaves="3" seed="4"/>
+          <feColorMatrix values="0 0 0 0 .1  0 0 0 0 .07  0 0 0 0 .05  0 0 0 -1.6 1.15"/>
+          <feComposite in2="SourceGraphic" operator="in"/></filter>
+        <filter id="mcRough" color-interpolation-filters="sRGB" x="-5%" y="-5%" width="110%" height="110%">
+          <feTurbulence type="fractalNoise" baseFrequency=".06" numOctaves="2" seed="2"/>
+          <feDisplacementMap in="SourceGraphic" scale="5"/></filter>
+        <filter id="mcCarve" color-interpolation-filters="sRGB" x="-10%" y="-20%" width="120%" height="140%">
+          <feTurbulence type="fractalNoise" baseFrequency=".65" numOctaves="2" seed="3" result="n"/>
+          <feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" result="d"/>
+          <feTurbulence type="fractalNoise" baseFrequency=".09" numOctaves="3" seed="9" result="m"/>
+          <feColorMatrix in="m" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -2.6 2.05" result="wear"/>
+          <feComposite in="d" in2="wear" operator="in" result="w"/>
+          <feGaussianBlur in="w" stdDeviation=".45"/></filter>
+        <linearGradient id="mcWet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity=".05"/><stop offset="1" stop-color="#000" stop-opacity=".35"/></linearGradient>
+        <linearGradient id="mcFire" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#FF8A2C" stop-opacity=".2"/><stop offset="1" stop-color="#FF8A2C" stop-opacity="0"/></linearGradient>
       </defs>
+      <!-- Chimney smoke: the real plume sways, and soft puffs keep rising -->
+      <g mask="url(#mcSmokeMask)"><image class="mcSway" href="${game.image}" width="${W}" height="${H}" style="transform-origin:${cx}px ${cy}px"/></g>
+      <g filter="url(#mcPuff)">${[0, 1, 2, 3, 4, 5].map(k => `<circle class="mcPuffDot" cx="${cx}" cy="${cy - 6}" r="16" fill="url(#mcSmoke)" style="animation-delay:${-k * 1.25}s"/>`).join("")}</g>
+      <!-- Campfire: the flames flicker, the glow pulses, and sparks drift up -->
+      <ellipse class="mcGlowPulse" cx="${fx}" cy="${fy - 20}" rx="120" ry="95" fill="url(#mcGlow)"/>
+      <g mask="url(#mcFlameMask)"><image class="mcFlick" href="${game.image}" width="${W}" height="${H}" style="transform-origin:${fx}px ${fy}px"/></g>
+      ${[[-8, 0], [6, .7], [-2, 1.3], [10, 1.9], [-12, 2.5]].map(([dx, d]) => `<circle class="mcSpark" cx="${fx + dx}" cy="${fy - 40}" r="1.6" fill="#FFC36B" style="animation-delay:${d}s; --dx:${dx * 1.5}px"/>`).join("")}
+      <!-- The window that blinks the message -->
       <ellipse class="mcHalo" cx="${wx + ww / 2}" cy="${wy + wh / 2}" rx="${ww * 1.4}" ry="${wh * 1.25}" fill="url(#mcHalo)"/>
       <rect class="mcDim" x="${wx}" y="${wy}" width="${ww}" height="${wh}" rx="2" fill="#1C120B" filter="url(#mcSoft)"/>
+      <!-- The sign -->
       <g transform="translate(${sx} ${sy}) rotate(-4)">
-        <rect x="76" y="70" width="14" height="150" fill="#2A1E16"/>
-        <path d="M40 0 V22 M126 0 V22" stroke="#1A1410" stroke-width="2.5"/>
-        <rect x="76" y="-12" width="14" height="16" fill="#2A1E16"/>
-        <rect x="0" y="20" width="166" height="84" rx="5" fill="url(#mcWood)"/>
-        <path d="M4 62 H162" stroke="#22180F" stroke-width="2" opacity=".7"/>
-        <path d="M10 34 C50 31 90 37 156 33 M12 88 C60 85 110 91 154 87" stroke="#6B5440" stroke-width="1.2" opacity=".5" fill="none"/>
-        <circle cx="12" cy="30" r="2.5" fill="#1A1410"/><circle cx="154" cy="30" r="2.5" fill="#1A1410"/>
-        ${sign.map((w, k) => `<text x="83" y="${sign.length > 1 ? 54 + k * 34 : 72}" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="27" letter-spacing="3" fill="#D8C29C" opacity=".82">${w}</text>`).join("")}
-        <rect x="0" y="20" width="166" height="84" rx="5" fill="url(#mcFire)"/>
+        <path d="M77 66 L91 66 L92 222 L76 222 Z" fill="#1F1610" filter="url(#mcRough)"/>
+        <path d="M40 2 Q41 12 40 22 M126 2 Q125 12 126 22" stroke="#120D09" stroke-width="2" fill="none"/>
+        <path d="M76 -12 H92 V6 H76 Z" fill="#1F1610"/>
+        <g filter="url(#mcRough)">
+          <rect x="0" y="20" width="166" height="84" rx="3" fill="#5E4834"/>
+          <rect x="0" y="20" width="166" height="84" rx="3" fill="#5E4834" filter="url(#mcGrain)"/>
+          <path d="M3 61 H163" stroke="#1E150E" stroke-width="2.2" opacity=".8"/>
+        </g>
+        ${sign.map((w, k) => { const y = sign.length > 1 ? 52 + k * 34 : 72;
+          return `<g filter="url(#mcCarve)" font-family="Georgia, 'Times New Roman', serif" font-size="27" letter-spacing="3" text-anchor="middle">
+            <text x="83" y="${y + 1.2}" fill="#8C7356" opacity=".45">${w}</text>
+            <text x="83" y="${y}" fill="#1A120C" opacity=".88">${w}</text></g>`; }).join("")}
+        <circle cx="11" cy="29" r="2.2" fill="#140E0A"/><circle cx="155" cy="29" r="2.2" fill="#140E0A"/>
+        <rect x="0" y="20" width="166" height="84" rx="3" fill="url(#mcWet)"/>
+        <rect x="0" y="20" width="166" height="84" rx="3" fill="url(#mcFire)"/>
       </g>
     </svg>
   </div>`;
