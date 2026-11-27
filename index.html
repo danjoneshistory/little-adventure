@@ -28,6 +28,8 @@
                 Before then the tile shows the date and the check-in button is turned off.
                 opensText: optional line shown instead of "This adventure opens on …".
      closes   - optional date and time after which it can no longer be opened (closedText: the line shown then).
+     noGps    - true = no location check at all: a button opens it from anywhere
+                (noGpsText / noGpsButton change the line and the button label).
      aim      - true = no GPS: she unlocks it by pointing her phone at the Moon (or the North Star
                 if the Moon has set). aimText: optional line shown above the button.
      about    - optional short description of the place, shown before they check in
@@ -331,7 +333,10 @@ const HUNT = {
           game: { type: "morse", message: "MISS YOU", sign: "MORSE CABIN",
                   image: "images/cabin.jpg", size: [890, 1188], window: [311, 420, 47, 56], signAt: [118, 800],
                   chimney: [628, 296], fire: [717, 838] } },
-        { name: "Pinecrest Lake",         icon: "lake",         lat: 38.19600, lng: -119.99300, radius: 1000,
+        // No GPS here: there's no cell service at the lake, so she can open it from anywhere.
+        { name: "Pinecrest Lake",         icon: "lake",         lat: 38.19600, lng: -119.99300, radius: 1000, noGps: true,
+          noGpsText: "There’s no cell service at the lake, so no location check is needed. Tap below whenever you’re ready.",
+          noGpsButton: "Open my lake mission",
           about: "A mountain lake ringed by pines and granite, with a trail that loops all the way around it (about 4 miles).",
           quote: { text: "Now folds the lily all her sweetness up,\nAnd slips into the bosom of the lake:\nSo fold thyself, my dearest, thou, and slip\nInto my bosom and be lost in me.",
                    by: "Alfred, Lord Tennyson, “Now Sleeps the Crimson Petal”" },
@@ -339,7 +344,7 @@ const HUNT = {
             sections: [
               { text: "One of my favorite memories of you is when we all went to a lake and you climbed a tree in order to free a swing. You were wearing a bikini and a cowboy hat, and my heart nearly pounded its way out of my chest. When I see lakes, I think of adventure, and I think of you. Don’t jump in this one—it’s too cold. Instead, breathe the fresh air, enjoy the view, and let your mind wander to pleasant things." },
               { heading: "Your lake mission",
-                text: "1. Walk part of the trail around the lake. Go as far as you like.\n2. Skip a stone: Hunt along the shore for the flattest, smoothest stone you can find and skip it across the water. Try for four skips, one for each week until December 28th. Keep trying until you get all four, and remember your best so you can tell me later.\n3. Keep it with you: Notice one smell, one sound, and one sight from the lake that you want to remember forever. Hold onto them so you can tell me about them later.\n4. Leave our mark: Leave our initials somewhere at the lake. You could draw them in the sand, scratch them into a fallen log, arrange them with rocks, or spell them out in leaves or branches." },
+                text: "1. Walk part of the trail around the lake. Go as far as you like.\n2. Skip a stone: Hunt along the shore for the flattest, smoothest stone you can find and skip it across the water. Try for four skips, one for each week until December 28th. Keep trying until you get all four, and remember your best so you can tell me later.\n3. Keep it with you: Notice one smell, one sound, and one sight from the lake that you want to remember forever. Hold onto them so you can tell me about them later.\n4. Leave our mark: Carve our initials somewhere at the lake. If you aren’t at the lake, carve them somewhere near the cabin instead. You could draw them in the sand or snow, scratch them into a fallen log, arrange them with rocks, or spell them out in leaves or branches." },
               { heading: "Your turn",
                 text: "When our initials are finished, tap the button below." }
             ],
@@ -1339,6 +1344,11 @@ function checkCard(e, i, c, prompt){
     card.append(b, el("p", {class:"status", id:"status"}));
   } else if (e.aim){
     aimUnlock(card, e, () => arrive(i, c));
+  } else if (e.noGps){   // no location check: she can open it from anywhere
+    card.append(el("p", {class:"text", style:bold}, e.noGpsText || "No location check for this one. Tap below whenever you’re ready."));
+    const b = el("button", {type:"button", class:"primary"}, e.noGpsButton || "Open my mission");
+    b.addEventListener("click", () => arrive(i, c));
+    card.append(b, el("p", {class:"status", id:"status"}));
   } else {
     card.append(el("p", {class:"text", style:bold}, prompt));
     const b = el("button", {type:"button", class:"primary", id:"check"}, "I’m here! Check my location");
